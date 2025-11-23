@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+coverage/
+.env*
+.vscode/
+.idea/
+.git/
+public/
+*.config.js
+package-lock.json
+
