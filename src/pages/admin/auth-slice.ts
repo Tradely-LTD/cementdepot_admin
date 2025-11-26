@@ -1,11 +1,33 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
-import type { LoginUserApiResponse } from '@/store/results';
+
+// Actual API response structure
+export type LoginResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      email: string;
+      phone: string;
+      firstName: string;
+      lastName: string;
+      role: string;
+      kycStatus: string;
+      isActive: boolean;
+      [key: string]: any;
+    };
+    tokens: {
+      accessToken: string;
+      refreshToken: string;
+    };
+  };
+};
 
 export type AuthState = {
   isAuthenticated: boolean;
-  loginResponse: LoginUserApiResponse | null;
+  loginResponse: LoginResponse | null;
 };
 
 const initialState: AuthState = {
@@ -30,6 +52,10 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     setAuth: setAuthHandler,
+    setLoginResponse: (state, { payload }: PayloadAction<LoginResponse>) => {
+      state.loginResponse = payload;
+      state.isAuthenticated = true;
+    },
     logout: () => {
       localStorage.clear();
       // Don't redirect automatically - let PrivateRoute handle redirects
@@ -48,7 +74,7 @@ export const authSlice = createSlice({
   },
 });
 
-export const { logout, setAuth } = authSlice.actions;
+export const { logout, setAuth, setLoginResponse } = authSlice.actions;
 
 // Selector for accessing auth state
 export const useUserSlice = () => useSelector((state: RootState) => state.auth);

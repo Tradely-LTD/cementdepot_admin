@@ -12,6 +12,15 @@ import type { RootState } from './store';
 export const TAGS = {
   AUTH: 'AUTH',
   USER: 'USER',
+  PRODUCT: 'PRODUCT',
+  DEPOT: 'DEPOT',
+  INVENTORY: 'INVENTORY',
+  ORDER: 'ORDER',
+  PAYMENT: 'PAYMENT',
+  NOTIFICATION: 'NOTIFICATION',
+  REPORT: 'REPORT',
+  DELIVERY_ROUTE: 'DELIVERY_ROUTE',
+  PRICING: 'PRICING',
 } as const;
 
 export const baseQuery = fetchBaseQuery({
@@ -19,7 +28,7 @@ export const baseQuery = fetchBaseQuery({
   prepareHeaders: (headers, { getState }) => {
     const state = getState() as RootState;
 
-    const token = state.auth.loginResponse?.accessToken || '';
+    const token = state.auth.loginResponse?.data?.tokens?.accessToken || '';
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
@@ -37,12 +46,13 @@ const baseQueryWithReauth: BaseQueryFn<
   if (result.error && result.error.status === 401) {
     // Get refresh token from Redux state
     const state = api.getState() as RootState;
-    const refreshToken = state.auth.loginResponse?.refreshToken || '';
+    const refreshToken =
+      state.auth.loginResponse?.data?.tokens?.refreshToken || '';
 
     if (refreshToken) {
       const refreshResult = await baseQuery(
         {
-          url: '/auth/refresh-token',
+          url: '/api/v1/auth/refresh',
           method: 'POST',
           body: {
             refreshToken: refreshToken,
@@ -53,14 +63,7 @@ const baseQueryWithReauth: BaseQueryFn<
       );
 
       if (refreshResult.data) {
-        // Store the new token in Redux state
-        // const newToken =
-        //   refreshResult.data?.access_token as string ||
-        //   refreshResult.data?.access_token as string;
-        // if (newToken) {
-        //   api.dispatch(setAccessToken(newToken));
-        // }
-
+        // Token refreshed successfully, retry original request
         return baseQuery(args, api, extraOptions);
       } else {
         // Refresh failed, clear tokens and logout

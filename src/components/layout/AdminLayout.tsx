@@ -1,27 +1,86 @@
 import { useState } from 'react';
-import { Menu, X, LayoutDashboard, ChevronLeft, BarChart3 } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  ChevronLeft,
+  Package,
+  MapPin,
+  ShoppingCart,
+  CreditCard,
+  BarChart3,
+  Warehouse,
+  Route,
+  CircleDollarSign,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { NotificationPanel } from '@/components/notifications/NotificationPanel';
+import { useDispatch } from 'react-redux';
+import { logout, useUserSlice } from '@/pages/admin/auth-slice';
 
 interface MenuItem {
   id: string;
   label: string;
   icon: LucideIcon;
-  href: string;
+  path: string;
 }
 
-const MENU_ITEMS: MenuItem[] = [
+export const MENU_ITEMS: MenuItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
     icon: LayoutDashboard,
-    href: '#dashboard',
+    path: '/',
+  },
+  {
+    id: 'products',
+    label: 'Products',
+    icon: Package,
+    path: '/products',
+  },
+  {
+    id: 'depots',
+    label: 'Depots',
+    icon: MapPin,
+    path: '/depots',
+  },
+  {
+    id: 'inventory',
+    label: 'Inventory',
+    icon: Warehouse,
+    path: '/inventory',
+  },
+  {
+    id: 'orders',
+    label: 'Orders',
+    icon: ShoppingCart,
+    path: '/orders',
+  },
+  {
+    id: 'routes',
+    label: 'Routes',
+    icon: Route,
+    path: '/routes',
+  },
+  {
+    id: 'pricing',
+    label: 'Pricing',
+    icon: CircleDollarSign,
+    path: '/pricing',
+  },
+  {
+    id: 'payments',
+    label: 'Payments',
+    icon: CreditCard,
+    path: '/payments',
   },
   {
     id: 'analysis',
-    label: 'Analysis',
+    label: 'Reports',
     icon: BarChart3,
-    href: '#analysis',
+    path: '/analysis',
   },
 ];
 
@@ -32,7 +91,32 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeMenuItem, setActiveMenuItem] = useState('dashboard');
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const { loginResponse } = useUserSlice();
+  const user = loginResponse?.data?.user;
+  const userRole = user?.role;
+  const isAdmin = userRole === 'admin';
+  const initials = user
+    ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() ||
+      user.email?.[0]?.toUpperCase() ||
+      'AD'
+    : 'AD';
+
+  // Filter menu items based on user role
+  const filteredMenuItems = MENU_ITEMS.filter(item => {
+    // Only show Payments to admins
+    if (item.id === 'payments' && !isAdmin) {
+      return false;
+    }
+    return true;
+  });
+
+  // Get current page title based on route
+  const currentMenuItem = filteredMenuItems.find(
+    item => item.path === location.pathname
+  );
+  const pageTitle = currentMenuItem?.label || 'Dashboard';
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
@@ -116,19 +200,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-4">
             <ul className="space-y-1 px-3">
-              {MENU_ITEMS.map(item => {
+              {filteredMenuItems.map(item => {
                 const Icon = item.icon;
-                const isActive = activeMenuItem === item.id;
+                const isActive = location.pathname === item.path;
 
                 return (
                   <li key={item.id}>
-                    <a
-                      href={item.href}
-                      onClick={e => {
-                        e.preventDefault();
-                        setActiveMenuItem(item.id);
-                        setSidebarOpen(false);
-                      }}
+                    <Link
+                      to={item.path}
+                      onClick={() => setSidebarOpen(false)}
                       className={`
                         flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
                         ${
@@ -141,7 +221,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     >
                       <Icon size={20} />
                       {!sidebarCollapsed && <span>{item.label}</span>}
-                    </a>
+                    </Link>
                   </li>
                 );
               })}
@@ -152,14 +232,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="p-4 border-t border-gray-700">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-semibold">
-                OW
+                {initials}
               </div>
               {!sidebarCollapsed && (
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">
-                    Olivia Williams
+                    {user?.firstName
+                      ? `${user.firstName} ${user.lastName ?? ''}`.trim()
+                      : (user?.email ?? 'Admin User')}
                   </p>
-                  <p className="text-xs text-gray-400 truncate">Admin</p>
+                  <p className="text-xs text-gray-400 truncate">
+                    {(user?.role ?? 'admin').toUpperCase()}
+                  </p>
                 </div>
               )}
               {!sidebarCollapsed && (
@@ -198,13 +282,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             <div className="flex-1 lg:ml-0 ml-4">
               <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-white">
-                Dashboard
+                {pageTitle}
               </h1>
             </div>
 
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm">
-                Profile
+              <NotificationPanel />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => dispatch(logout())}
+              >
+                Logout
               </Button>
             </div>
           </div>
