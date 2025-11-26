@@ -200,6 +200,7 @@ const injectedRtkApi = api.injectEndpoints({
         params: {
           page: queryArg.page,
           limit: queryArg.limit,
+          search: queryArg.search,
           state: queryArg.state,
           lga: queryArg.lga,
           city: queryArg.city,
@@ -272,6 +273,12 @@ const injectedRtkApi = api.injectEndpoints({
       query: queryArg => ({
         url: `/api/v1/delivery-routes/depot/${queryArg.depotId}`,
       }),
+    }),
+    getApiV1DeliveryRoutesStats: build.query<
+      GetApiV1DeliveryRoutesStatsApiResponse,
+      GetApiV1DeliveryRoutesStatsApiArg
+    >({
+      query: () => ({ url: `/api/v1/delivery-routes/stats` }),
     }),
     getApiV1DeliveryRoutes: build.query<
       GetApiV1DeliveryRoutesApiResponse,
@@ -393,6 +400,17 @@ const injectedRtkApi = api.injectEndpoints({
         },
       }),
     }),
+    getApiV1InventoryStats: build.query<
+      GetApiV1InventoryStatsApiResponse,
+      GetApiV1InventoryStatsApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/inventory/stats`,
+        params: {
+          threshold: queryArg.threshold,
+        },
+      }),
+    }),
     getApiV1InventoryDepotByDepotId: build.query<
       GetApiV1InventoryDepotByDepotIdApiResponse,
       GetApiV1InventoryDepotByDepotIdApiArg
@@ -458,6 +476,7 @@ const injectedRtkApi = api.injectEndpoints({
           limit: queryArg.limit,
           status: queryArg.status,
           buyerId: queryArg.buyerId,
+          sellerId: queryArg.sellerId,
           depotId: queryArg.depotId,
         },
       }),
@@ -496,6 +515,12 @@ const injectedRtkApi = api.injectEndpoints({
           limit: queryArg.limit,
         },
       }),
+    }),
+    getApiV1OrdersStats: build.query<
+      GetApiV1OrdersStatsApiResponse,
+      GetApiV1OrdersStatsApiArg
+    >({
+      query: () => ({ url: `/api/v1/orders/stats` }),
     }),
     getApiV1OrdersById: build.query<
       GetApiV1OrdersByIdApiResponse,
@@ -1037,6 +1062,8 @@ export type GetApiV1DepotsApiArg = {
   page?: number;
   /** Items per page (optional - omit for all results) */
   limit?: number;
+  /** Search in depot name, address, or code */
+  search?: string;
   /** Filter by state */
   state?: string;
   /** Filter by LGA */
@@ -1131,6 +1158,25 @@ export type GetApiV1DeliveryRoutesDepotByDepotIdApiArg = {
   /** Depot ID */
   depotId: string;
 };
+export type GetApiV1DeliveryRoutesStatsApiResponse =
+  /** status 200 Delivery route statistics retrieved successfully */ Success & {
+    data?: {
+      total?: number;
+      active?: number;
+      inactive?: number;
+      byState?: {
+        state?: string;
+        count?: number;
+      }[];
+      byDepot?: {
+        depotId?: string;
+        depotName?: string;
+        depotCode?: string | null;
+        count?: number;
+      }[];
+    };
+  };
+export type GetApiV1DeliveryRoutesStatsApiArg = void;
 export type GetApiV1DeliveryRoutesApiResponse =
   /** status 200 Delivery routes retrieved successfully */ {
     success?: boolean;
@@ -1249,6 +1295,34 @@ export type GetApiV1InventoryLowStockApiResponse =
 export type GetApiV1InventoryLowStockApiArg = {
   threshold?: number;
 };
+export type GetApiV1InventoryStatsApiResponse =
+  /** status 200 Inventory statistics retrieved successfully */ Success & {
+    data?: {
+      totalItems?: number;
+      totalQuantity?: number;
+      totalReserved?: number;
+      totalAvailable?: number;
+      lowStockItems?: number;
+      byDepot?: {
+        depotId?: string;
+        depotName?: string;
+        depotCode?: string | null;
+        itemCount?: number;
+        totalQuantity?: number;
+      }[];
+      byProduct?: {
+        productId?: string;
+        productName?: string;
+        productBrand?: string | null;
+        depotCount?: number;
+        totalQuantity?: number;
+      }[];
+    };
+  };
+export type GetApiV1InventoryStatsApiArg = {
+  /** Low stock threshold */
+  threshold?: number;
+};
 export type GetApiV1InventoryDepotByDepotIdApiResponse =
   /** status 200 Depot inventory retrieved successfully */ Success & {
     data?: Inventory[];
@@ -1328,7 +1402,10 @@ export type GetApiV1OrdersApiArg = {
     | 'in_transit'
     | 'delivered'
     | 'cancelled';
+  /** Filter by buyer ID (Admin only) */
   buyerId?: string;
+  /** Filter by seller ID (Admin only, auto-filtered for Sellers) */
+  sellerId?: string;
   depotId?: string;
 };
 export type PostApiV1OrdersApiResponse =
@@ -1377,6 +1454,27 @@ export type GetApiV1OrdersAssignedApiArg = {
   page?: number;
   limit?: number;
 };
+export type GetApiV1OrdersStatsApiResponse =
+  /** status 200 Order statistics retrieved successfully */ Success & {
+    data?: {
+      total?: number;
+      pending?: number;
+      confirmed?: number;
+      processing?: number;
+      delivered?: number;
+      cancelled?: number;
+      totalRevenue?: number;
+      byStatus?: {
+        status?: string;
+        count?: number;
+      }[];
+      byDeliveryType?: {
+        deliveryType?: string;
+        count?: number;
+      }[];
+    };
+  };
+export type GetApiV1OrdersStatsApiArg = void;
 export type GetApiV1OrdersByIdApiResponse =
   /** status 200 Order retrieved successfully */ Success & {
     data?: Order;
@@ -2073,6 +2171,7 @@ export const {
   usePostApiV1DepotsByIdVerifyMutation,
   useGetApiV1DeliveryRoutesDestinationQuery,
   useGetApiV1DeliveryRoutesDepotByDepotIdQuery,
+  useGetApiV1DeliveryRoutesStatsQuery,
   useGetApiV1DeliveryRoutesQuery,
   usePostApiV1DeliveryRoutesMutation,
   useGetApiV1DeliveryRoutesByIdQuery,
@@ -2085,6 +2184,7 @@ export const {
   useGetApiV1PricingNearestDepotQuery,
   useGetApiV1PricingDestinationsByDepotIdQuery,
   useGetApiV1InventoryLowStockQuery,
+  useGetApiV1InventoryStatsQuery,
   useGetApiV1InventoryDepotByDepotIdQuery,
   useGetApiV1InventoryDepotByDepotIdProductAndProductIdQuery,
   usePutApiV1InventoryMutation,
@@ -2095,6 +2195,7 @@ export const {
   usePostApiV1OrdersMutation,
   useGetApiV1OrdersMyOrdersQuery,
   useGetApiV1OrdersAssignedQuery,
+  useGetApiV1OrdersStatsQuery,
   useGetApiV1OrdersByIdQuery,
   useGetApiV1OrdersNumberByOrderNumberQuery,
   usePatchApiV1OrdersByIdStatusMutation,

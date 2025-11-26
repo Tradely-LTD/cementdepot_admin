@@ -169,6 +169,7 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
           id: `${arg.body.depotId}-${arg.body.productId}`,
         },
         { type: TAGS.INVENTORY, id: 'LOW_STOCK' },
+        { type: TAGS.INVENTORY, id: 'STATS' },
       ],
     },
     postApiV1InventoryAdjust: {
@@ -183,10 +184,14 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
           id: `HISTORY-${arg.body.depotId}-${arg.body.productId}`,
         },
         { type: TAGS.INVENTORY, id: 'LOW_STOCK' },
+        { type: TAGS.INVENTORY, id: 'STATS' },
       ],
     },
     putApiV1InventoryFactory: {
-      invalidatesTags: [{ type: TAGS.INVENTORY, id: 'LOW_STOCK' }],
+      invalidatesTags: [
+        { type: TAGS.INVENTORY, id: 'LOW_STOCK' },
+        { type: TAGS.INVENTORY, id: 'STATS' },
+      ],
     },
 
     // Delivery Routes - Query
@@ -220,33 +225,43 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
         { type: TAGS.DELIVERY_ROUTE, id: `DEPOT-${arg.depotId}` },
       ],
     },
+    getApiV1DeliveryRoutesStats: {
+      providesTags: [{ type: TAGS.DELIVERY_ROUTE, id: 'STATS' }],
+    },
 
     // Delivery Routes - Mutations
     postApiV1DeliveryRoutes: {
-      invalidatesTags: [{ type: TAGS.DELIVERY_ROUTE, id: LIST_ID }],
+      invalidatesTags: [
+        { type: TAGS.DELIVERY_ROUTE, id: LIST_ID },
+        { type: TAGS.DELIVERY_ROUTE, id: 'STATS' },
+      ],
     },
     putApiV1DeliveryRoutesById: {
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.DELIVERY_ROUTE, id: arg.id },
         { type: TAGS.DELIVERY_ROUTE, id: LIST_ID },
+        { type: TAGS.DELIVERY_ROUTE, id: 'STATS' },
       ],
     },
     deleteApiV1DeliveryRoutesById: {
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.DELIVERY_ROUTE, id: arg.id },
         { type: TAGS.DELIVERY_ROUTE, id: LIST_ID },
+        { type: TAGS.DELIVERY_ROUTE, id: 'STATS' },
       ],
     },
     postApiV1DeliveryRoutesByIdActivate: {
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.DELIVERY_ROUTE, id: arg.id },
         { type: TAGS.DELIVERY_ROUTE, id: LIST_ID },
+        { type: TAGS.DELIVERY_ROUTE, id: 'STATS' },
       ],
     },
     postApiV1DeliveryRoutesByIdDeactivate: {
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.DELIVERY_ROUTE, id: arg.id },
         { type: TAGS.DELIVERY_ROUTE, id: LIST_ID },
+        { type: TAGS.DELIVERY_ROUTE, id: 'STATS' },
       ],
     },
 
@@ -288,6 +303,9 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
       providesTags: (_result, _error, arg) => [
         { type: TAGS.ORDER, id: arg.id },
       ],
+    },
+    getApiV1OrdersStats: {
+      providesTags: [{ type: TAGS.ORDER, id: 'STATS' }],
     },
     getApiV1OrdersMyOrders: {
       providesTags: result =>
@@ -338,6 +356,7 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
     postApiV1Orders: {
       invalidatesTags: [
         { type: TAGS.ORDER, id: LIST_ID },
+        { type: TAGS.ORDER, id: 'STATS' },
         { type: TAGS.INVENTORY, id: 'LOW_STOCK' },
       ],
     },
@@ -345,6 +364,7 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.ORDER, id: arg.id },
         { type: TAGS.ORDER, id: LIST_ID },
+        { type: TAGS.ORDER, id: 'STATS' },
         { type: TAGS.ORDER, id: `HISTORY-${arg.id}` },
       ],
     },
@@ -352,6 +372,7 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.ORDER, id: arg.id },
         { type: TAGS.ORDER, id: LIST_ID },
+        { type: TAGS.ORDER, id: 'STATS' },
         { type: TAGS.ORDER, id: `HISTORY-${arg.id}` },
       ],
     },
@@ -359,6 +380,7 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.ORDER, id: arg.id },
         { type: TAGS.ORDER, id: LIST_ID },
+        { type: TAGS.ORDER, id: 'STATS' },
         { type: TAGS.ORDER, id: 'ASSIGNED' },
       ],
     },
@@ -366,6 +388,7 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.ORDER, id: arg.id },
         { type: TAGS.ORDER, id: LIST_ID },
+        { type: TAGS.ORDER, id: 'STATS' },
         { type: TAGS.ORDER, id: `HISTORY-${arg.id}` },
       ],
     },
@@ -541,6 +564,7 @@ export const {
   useGetApiV1InventoryDepotByDepotIdQuery,
   useGetApiV1InventoryDepotByDepotIdProductAndProductIdQuery,
   useGetApiV1InventoryLowStockQuery,
+  useGetApiV1InventoryStatsQuery,
   useGetApiV1InventoryDepotByDepotIdProductAndProductIdHistoryQuery,
   usePutApiV1InventoryMutation,
   usePostApiV1InventoryAdjustMutation,
@@ -551,6 +575,7 @@ export const {
   useGetApiV1DeliveryRoutesByIdQuery,
   useGetApiV1DeliveryRoutesDestinationQuery,
   useGetApiV1DeliveryRoutesDepotByDepotIdQuery,
+  useGetApiV1DeliveryRoutesStatsQuery,
   usePostApiV1DeliveryRoutesMutation,
   usePutApiV1DeliveryRoutesByIdMutation,
   useDeleteApiV1DeliveryRoutesByIdMutation,
@@ -566,6 +591,7 @@ export const {
   // Orders
   useGetApiV1OrdersQuery,
   useGetApiV1OrdersByIdQuery,
+  useGetApiV1OrdersStatsQuery,
   useGetApiV1OrdersMyOrdersQuery,
   useGetApiV1OrdersAssignedQuery,
   useGetApiV1OrdersNumberByOrderNumberQuery,

@@ -64,12 +64,12 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: Route,
     path: '/routes',
   },
-  {
-    id: 'pricing',
-    label: 'Pricing',
-    icon: CircleDollarSign,
-    path: '/pricing',
-  },
+  // {
+  //   id: 'pricing',
+  //   label: 'Pricing',
+  //   icon: CircleDollarSign,
+  //   path: '/pricing',
+  // },
   {
     id: 'payments',
     label: 'Payments',
