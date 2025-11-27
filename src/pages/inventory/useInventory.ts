@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   useGetApiV1InventoryDepotByDepotIdQuery,
   useGetApiV1InventoryLowStockQuery,
@@ -8,6 +8,16 @@ import {
 
 export const useInventory = (selectedDepotId?: string) => {
   const [threshold, setThreshold] = useState(50);
+  const [debouncedThreshold, setDebouncedThreshold] = useState(50);
+
+  // Debounce threshold changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedThreshold(threshold);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timer);
+  }, [threshold]);
 
   // Fetch inventory by depot
   const {
@@ -19,12 +29,12 @@ export const useInventory = (selectedDepotId?: string) => {
     { skip: !selectedDepotId }
   );
 
-  // Fetch low stock items
+  // Fetch low stock items (using debounced threshold)
   const {
     data: lowStockData,
     isLoading: isLoadingLowStock,
     refetch: refetchLowStock,
-  } = useGetApiV1InventoryLowStockQuery({ threshold });
+  } = useGetApiV1InventoryLowStockQuery({ threshold: debouncedThreshold });
 
   // Update inventory
   const [updateInventory, { isLoading: isUpdating }] =
@@ -57,12 +67,28 @@ export const useInventory = (selectedDepotId?: string) => {
   const handleAdjustInventory = async (
     depotId: string,
     productId: string,
-    adjustment: number,
+    quantityChange: number,
     reason: string
   ) => {
     try {
+      // Determine adjustment type based on quantity change
+      // Positive = STOCK_IN, Negative = STOCK_OUT
+      // For manual adjustments, we'll use MANUAL_ADJUSTMENT
+      const adjustmentType =
+        quantityChange > 0
+          ? 'stock_in'
+          : quantityChange < 0
+            ? 'stock_out'
+            : 'manual_adjustment';
+
       await adjustInventory({
-        body: { depotId, productId, adjustment, reason },
+        body: {
+          depotId,
+          productId,
+          type: adjustmentType,
+          quantityChange,
+          reason,
+        },
       }).unwrap();
       refetchInventory();
       refetchLowStock();
@@ -84,6 +110,7 @@ export const useInventory = (selectedDepotId?: string) => {
     isAdjusting,
     threshold,
     setThreshold,
+    debouncedThreshold,
     handleUpdateInventory,
     handleAdjustInventory,
     refetchInventory,

@@ -23,6 +23,9 @@ export const useDepots = () => {
   const [filters, setFilters] = useState<DepotFilters>({});
 
   // Fetch depots
+  // Backend automatically filters by sellerId for sellers
+  // Admin sees all depots, Seller sees only their own depots
+  // The backend controller automatically adds sellerId filter for sellers
   const { data, isLoading, error, refetch } = useGetApiV1DepotsQuery({
     page,
     limit,

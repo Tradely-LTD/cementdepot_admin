@@ -14,6 +14,7 @@ import { Login } from '@/pages/auth/login';
 import { NotFound } from '@/pages/NotFound';
 import type { RootState } from '@/store/store';
 import { DeliveryRoutes } from '@/pages/delivery-routes';
+import { Profile } from '@/pages/profile';
 // import { Pricing } from '@/pages/pricing';
 import { useEffect } from 'react';
 import { logout } from '@/pages/admin/auth-slice';
@@ -102,6 +103,7 @@ function App() {
                     <Route path="/inventory" element={<Inventory />} />
                     <Route path="/orders" element={<Orders />} />
                     <Route path="/routes" element={<DeliveryRoutes />} />
+                    <Route path="/profile" element={<Profile />} />
                     {/* <Route path="/pricing" element={<Pricing />} /> */}
                     <Route
                       path="/payments"

@@ -1,6 +1,9 @@
 import { useDashboard } from './useDashboard';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { useGetApiV1InventoryLowStockQuery } from '@/store/coreApiWithTags';
 import {
   TrendingUp,
   TrendingDown,
@@ -8,6 +11,10 @@ import {
   Package,
   MapPin,
   CreditCard,
+  Clock,
+  Calendar,
+  AlertTriangle,
+  ArrowRight,
 } from 'lucide-react';
 
 export function Dashboard() {
@@ -16,6 +23,11 @@ export function Dashboard() {
 
   // Extract data from the API response
   const stats = dashboardData?.data;
+
+  // Fetch low stock items (threshold: 10)
+  const { data: lowStockData, isLoading: isLoadingLowStock } =
+    useGetApiV1InventoryLowStockQuery({ threshold: 10 });
+  const lowStockItems = lowStockData?.data?.items || [];
 
   return (
     <div className="space-y-6">
@@ -95,54 +107,82 @@ export function Dashboard() {
             />
           </div>
 
-          {/* Pending Orders */}
-          {stats?.pendingOrders !== undefined && (
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Pending Orders
-              </h3>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {stats.pendingOrders.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  Orders awaiting processing
-                </p>
-              </div>
-            </Card>
-          )}
+          {/* Additional Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Pending Orders */}
+            {stats?.pendingOrders !== undefined && (
+              <StatCard
+                title="Pending Orders"
+                value={stats.pendingOrders.toLocaleString()}
+                icon={<Clock className="h-6 w-6" />}
+                color="bg-indigo-100 dark:bg-indigo-900"
+                iconColor="text-indigo-600 dark:text-indigo-400"
+              />
+            )}
 
-          {/* Recent Orders Count */}
-          {stats?.recentOrders !== undefined && (
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Recent Orders (Last 30 Days)
-              </h3>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {stats.recentOrders.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  Orders placed in the last 30 days
-                </p>
-              </div>
-            </Card>
-          )}
+            {/* Recent Orders Count */}
+            {stats?.recentOrders !== undefined && (
+              <StatCard
+                title="Recent Orders (Last 30 Days)"
+                value={stats.recentOrders.toLocaleString()}
+                icon={<Calendar className="h-6 w-6" />}
+                color="bg-teal-100 dark:bg-teal-900"
+                iconColor="text-teal-600 dark:text-teal-400"
+              />
+            )}
+          </div>
 
           {/* Low Stock Alert */}
           {stats?.lowStockItems !== undefined && stats.lowStockItems > 0 && (
             <Card className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
-              <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100 mb-4">
-                Low Stock Alert
-              </h3>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-100">
-                  {stats.lowStockItems.toLocaleString()}
-                </p>
-                <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-2">
-                  Items with low stock (&lt; 10 available)
-                </p>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100">
+                      Low Stock Alert
+                    </h3>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                      {stats.lowStockItems.toLocaleString()} item
+                      {stats.lowStockItems !== 1 ? 's' : ''} with low stock
+                    </p>
+                  </div>
+                </div>
+                <Link to="/inventory">
+                  <Button variant="outline" size="sm">
+                    View
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
+
+              {!isLoadingLowStock && lowStockItems.length > 0 && (
+                <div className="space-y-2">
+                  {lowStockItems.slice(0, 3).map((item: any) => {
+                    const availableQuantity =
+                      Number(item.quantity || 0) -
+                      Number(item.reservedQuantity || 0);
+                    return (
+                      <div
+                        key={`${item.depotId}-${item.productId}`}
+                        className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded text-sm"
+                      >
+                        <span className="text-gray-900 dark:text-white">
+                          {item.product?.name || 'Unknown Product'}
+                        </span>
+                        <span className="text-yellow-600 dark:text-yellow-400 font-medium">
+                          {availableQuantity} left
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {lowStockItems.length > 3 && (
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300 text-center pt-1">
+                      +{lowStockItems.length - 3} more
+                    </p>
+                  )}
+                </div>
+              )}
             </Card>
           )}
         </>

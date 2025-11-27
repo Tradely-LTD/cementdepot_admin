@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import {
   Plus,
@@ -85,6 +86,9 @@ export function Products() {
   const categories = categoriesData?.data || [];
 
   // Get all depots without pagination (no page/limit params)
+  // Backend automatically filters by sellerId for sellers
+  // Admin sees all depots, Seller sees only their own depots
+  // The backend controller automatically adds sellerId filter for sellers
   const { data: depotsData } = useGetApiV1DepotsQuery({});
   const depots = (depotsData as any)?.data || [];
 
@@ -97,6 +101,8 @@ export function Products() {
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
   const handleProductSubmit = async (
     data: ProductCreate & { isActive?: boolean }
@@ -128,10 +134,9 @@ export function Products() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      await handleDeleteProduct(id);
-    }
+  const handleDelete = (id: string) => {
+    setProductToDelete(id);
+    setDeleteConfirmOpen(true);
   };
 
   return (
@@ -170,6 +175,7 @@ export function Products() {
                 category: 'cement',
                 sellerId: isAdmin ? '' : currentUserId || '',
                 depotId: '',
+                initialStockQuantity: undefined,
               }}
               onSubmit={handleProductSubmit}
               isLoading={isCreating}
@@ -678,6 +684,22 @@ export function Products() {
           />
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={async () => {
+          if (productToDelete) {
+            await handleDeleteProduct(productToDelete);
+            setDeleteConfirmOpen(false);
+            setProductToDelete(null);
+          }
+        }}
+        title="Delete Product"
+        description="Are you sure you want to delete this product? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
@@ -717,6 +739,11 @@ const createProductSchema = (isAdmin: boolean) =>
       : yup.string().optional(),
     depotId: yup.string().required('Depot is required'),
     isActive: yup.boolean().optional(),
+    initialStockQuantity: yup
+      .number()
+      .integer('Stock quantity must be a whole number')
+      .min(0, 'Stock quantity cannot be negative')
+      .optional(),
   });
 
 type ProductFormData = yup.InferType<ReturnType<typeof createProductSchema>>;
@@ -865,6 +892,17 @@ function ProductForm({
           />
         </div>
 
+        <div>
+          <ControlledFormField
+            name="initialStockQuantity"
+            label="Initial Stock Quantity (Optional)"
+            type="number"
+            placeholder="0"
+            icon={Package}
+            helperText="If provided, inventory will be created automatically for this product at the selected depot"
+          />
+        </div>
+
         <div className="col-span-2">
           <ControlledFormField
             name="description"
@@ -913,6 +951,7 @@ function ProductForm({
         sellerId: defaultValues?.sellerId || '',
         depotId: defaultValues?.depotId || '',
         isActive: defaultValues?.isActive ?? editingProduct?.isActive ?? true,
+        initialStockQuantity: defaultValues?.initialStockQuantity ?? undefined,
       }}
       onSubmit={onSubmit}
       submitLabel="Save Product"

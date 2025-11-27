@@ -53,19 +53,29 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
         { type: TAGS.PRODUCT, id: `PRICING-${arg.id}` },
       ],
     },
+    getApiV1ProductsStats: {
+      providesTags: [{ type: TAGS.PRODUCT, id: 'STATS' }],
+    },
 
     // Products - Mutations
     postApiV1Products: {
-      invalidatesTags: [{ type: TAGS.PRODUCT, id: LIST_ID }],
+      invalidatesTags: [
+        { type: TAGS.PRODUCT, id: LIST_ID },
+        { type: TAGS.PRODUCT, id: 'STATS' },
+      ],
     },
     putApiV1ProductsById: {
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.PRODUCT, id: arg.id },
         { type: TAGS.PRODUCT, id: LIST_ID },
+        { type: TAGS.PRODUCT, id: 'STATS' },
       ],
     },
     deleteApiV1ProductsById: {
-      invalidatesTags: [{ type: TAGS.PRODUCT, id: LIST_ID }],
+      invalidatesTags: [
+        { type: TAGS.PRODUCT, id: LIST_ID },
+        { type: TAGS.PRODUCT, id: 'STATS' },
+      ],
     },
     postApiV1ProductsByIdPricingRules: {
       invalidatesTags: (_result, _error, arg) => [
@@ -122,21 +132,29 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
 
     // Depots - Mutations
     postApiV1Depots: {
-      invalidatesTags: [{ type: TAGS.DEPOT, id: LIST_ID }],
+      invalidatesTags: [
+        { type: TAGS.DEPOT, id: LIST_ID },
+        { type: TAGS.DEPOT, id: 'STATS' },
+      ],
     },
     putApiV1DepotsById: {
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.DEPOT, id: arg.id },
         { type: TAGS.DEPOT, id: LIST_ID },
+        { type: TAGS.DEPOT, id: 'STATS' },
       ],
     },
     deleteApiV1DepotsById: {
-      invalidatesTags: [{ type: TAGS.DEPOT, id: LIST_ID }],
+      invalidatesTags: [
+        { type: TAGS.DEPOT, id: LIST_ID },
+        { type: TAGS.DEPOT, id: 'STATS' },
+      ],
     },
     postApiV1DepotsByIdVerify: {
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.DEPOT, id: arg.id },
         { type: TAGS.DEPOT, id: LIST_ID },
+        { type: TAGS.DEPOT, id: 'STATS' },
       ],
     },
 
@@ -153,6 +171,9 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
     },
     getApiV1InventoryLowStock: {
       providesTags: [{ type: TAGS.INVENTORY, id: 'LOW_STOCK' }],
+    },
+    getApiV1InventoryStats: {
+      providesTags: [{ type: TAGS.INVENTORY, id: 'STATS' }],
     },
     getApiV1InventoryDepotByDepotIdProductAndProductIdHistory: {
       providesTags: (_result, _error, arg) => [

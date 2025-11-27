@@ -13,14 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
-import {
-  Route,
-  TrendingUp,
-  TrendingDown,
-  MapPin,
-  Building2,
-} from 'lucide-react';
+import { Route, TrendingUp, TrendingDown, MapPin } from 'lucide-react';
 import Select from 'react-select';
 import ReactPaginate from 'react-paginate';
 
@@ -58,6 +53,7 @@ export function DeliveryRoutes() {
 
   // Get depots - backend automatically filters by sellerId for sellers
   // Admin sees all depots, Seller sees only their own depots
+  // The backend controller automatically adds sellerId filter for sellers
   const { data: depotsData } = useGetApiV1DepotsQuery({});
   const depots = (depotsData as any)?.data || [];
 
@@ -85,6 +81,8 @@ export function DeliveryRoutes() {
   const [filterDraft, setFilterDraft] = useState(filters);
   const [depotLookupId, setDepotLookupId] = useState('');
   const [destinationLookup, setDestinationLookup] = useState(destinationFilter);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [routeToDelete, setRouteToDelete] = useState<string | null>(null);
   const formatCurrency = (value?: number | null) =>
     `₦${Number(value ?? 0).toLocaleString()}`;
 
@@ -95,7 +93,7 @@ export function DeliveryRoutes() {
   };
 
   const openEditModal = (route: DeliveryRoute) => {
-    setEditingRouteId(route.id);
+    setEditingRouteId(route.id || null);
     setFormState({
       sourceDepotId: route.sourceDepotId || '',
       destinationState: route.destinationState || '',
@@ -227,7 +225,12 @@ export function DeliveryRoutes() {
           variant="destructive"
           size="sm"
           disabled={!route.id}
-          onClick={() => route.id && handleDeleteRoute(route.id)}
+          onClick={() => {
+            if (route.id) {
+              setRouteToDelete(route.id);
+              setDeleteConfirmOpen(true);
+            }
+          }}
         >
           Delete
         </Button>
@@ -807,6 +810,22 @@ export function DeliveryRoutes() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={async () => {
+          if (routeToDelete) {
+            await handleDeleteRoute(routeToDelete);
+            setDeleteConfirmOpen(false);
+            setRouteToDelete(null);
+          }
+        }}
+        title="Delete Delivery Route"
+        description="Are you sure you want to delete this delivery route? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isMutating}
+      />
     </div>
   );
 }

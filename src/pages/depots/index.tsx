@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import {
   Plus,
@@ -190,10 +191,12 @@ export function Depots() {
     });
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this depot?')) {
-      await handleDeleteDepot(id);
-    }
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [depotToDelete, setDepotToDelete] = useState<string | null>(null);
+
+  const handleDelete = (id: string) => {
+    setDepotToDelete(id);
+    setDeleteConfirmOpen(true);
   };
 
   const handleVerify = async (id: string) => {
@@ -689,6 +692,22 @@ export function Depots() {
           />
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={async () => {
+          if (depotToDelete) {
+            await handleDeleteDepot(depotToDelete);
+            setDeleteConfirmOpen(false);
+            setDepotToDelete(null);
+          }
+        }}
+        title="Delete Depot"
+        description="Are you sure you want to delete this depot? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

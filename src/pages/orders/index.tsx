@@ -73,6 +73,8 @@ export function Orders() {
   } = useOrders();
 
   // Get depots - backend automatically filters by sellerId for sellers
+  // Admin sees all depots, Seller sees only their own depots
+  // The backend controller automatically adds sellerId filter for sellers
   const { data: depotsData } = useGetApiV1DepotsQuery({});
   const depots = (depotsData as any)?.data || [];
 

@@ -22,6 +22,39 @@ import {
   Boxes,
   Lock,
 } from 'lucide-react';
+import Select from 'react-select';
+
+// Inventory adjustment reasons
+const INVENTORY_ADJUSTMENT_REASONS = [
+  // Stock Additions
+  { value: 'new_stock_arrival', label: 'New Stock Arrival' },
+  { value: 'stock_transfer_in', label: 'Stock Transfer In' },
+  { value: 'return_from_customer', label: 'Return from Customer' },
+  { value: 'found_stock', label: 'Found Stock' },
+  { value: 'production_received', label: 'Production Received' },
+  { value: 'correction_overcount', label: 'Correction - Overcount' },
+
+  // Stock Removals
+  { value: 'damaged_goods', label: 'Damaged Goods' },
+  { value: 'expired_stock', label: 'Expired Stock' },
+  { value: 'quality_rejection', label: 'Quality Rejection' },
+  { value: 'theft_loss', label: 'Theft/Loss' },
+  { value: 'stock_transfer_out', label: 'Stock Transfer Out' },
+  { value: 'return_to_supplier', label: 'Return to Supplier' },
+  { value: 'spoilage', label: 'Spoilage' },
+  { value: 'correction_undercount', label: 'Correction - Undercount' },
+  { value: 'sample_testing', label: 'Sample/Testing' },
+  { value: 'donation_writeoff', label: 'Donation/Write-off' },
+
+  // Audit & Corrections
+  { value: 'physical_count_adjustment', label: 'Physical Count Adjustment' },
+  { value: 'system_error_correction', label: 'System Error Correction' },
+  { value: 'reconciliation', label: 'Reconciliation' },
+  { value: 'audit_finding', label: 'Audit Finding' },
+
+  // Other
+  { value: 'other', label: 'Other' },
+] as const;
 
 export function Inventory() {
   const [selectedDepotId, setSelectedDepotId] = useState<string>('');
@@ -34,13 +67,17 @@ export function Inventory() {
     isAdjusting,
     threshold,
     setThreshold,
+    debouncedThreshold,
   } = useInventory(selectedDepotId);
 
+  // Get depots - backend automatically filters by sellerId for sellers
+  // Admin sees all depots, Seller sees only their own depots
+  // The backend controller automatically adds sellerId filter for sellers
   const { data: depotsData } = useGetApiV1DepotsQuery({ page: 1, limit: 100 });
 
-  // Fetch inventory stats
+  // Fetch inventory stats (using debounced threshold)
   const { data: statsData, isLoading: isLoadingStats } =
-    useGetApiV1InventoryStatsQuery({ threshold });
+    useGetApiV1InventoryStatsQuery({ threshold: debouncedThreshold });
   const stats = statsData?.data;
 
   const [isAdjustDialogOpen, setIsAdjustDialogOpen] = useState(false);
@@ -49,15 +86,38 @@ export function Inventory() {
     productId: '',
     quantityChange: 0,
     reason: '',
+    customReason: '',
   });
 
   const handleAdjustSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate: if "Other" is selected, custom reason is required
+    if (
+      adjustFormData.reason === 'other' &&
+      !adjustFormData.customReason.trim()
+    ) {
+      return; // Form validation will handle this
+    }
+
+    // Validate: reason must be selected
+    if (!adjustFormData.reason) {
+      return;
+    }
+
+    // Use custom reason if "Other" is selected, otherwise use selected reason label
+    const finalReason =
+      adjustFormData.reason === 'other'
+        ? adjustFormData.customReason.trim()
+        : INVENTORY_ADJUSTMENT_REASONS.find(
+            r => r.value === adjustFormData.reason
+          )?.label || adjustFormData.reason;
+
     const result = await handleAdjustInventory(
       adjustFormData.depotId,
       adjustFormData.productId,
       adjustFormData.quantityChange,
-      adjustFormData.reason
+      finalReason
     );
     if (result.success) {
       setIsAdjustDialogOpen(false);
@@ -66,6 +126,7 @@ export function Inventory() {
         productId: '',
         quantityChange: 0,
         reason: '',
+        customReason: '',
       });
     }
   };
@@ -76,9 +137,16 @@ export function Inventory() {
       productId: item.productId,
       quantityChange: 0,
       reason: '',
+      customReason: '',
     });
     setIsAdjustDialogOpen(true);
   };
+
+  const selectedReasonOption = adjustFormData.reason
+    ? INVENTORY_ADJUSTMENT_REASONS.find(r => r.value === adjustFormData.reason)
+    : null;
+
+  const isOtherSelected = adjustFormData.reason === 'other';
 
   return (
     <div className="space-y-6">
@@ -207,19 +275,62 @@ export function Inventory() {
             <label className="block text-sm font-medium mb-2">
               Select Depot
             </label>
-            <select
-              value={selectedDepotId}
-              onChange={e => setSelectedDepotId(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
-            >
-              <option value="">All Depots</option>
-              {depotsData &&
-                (depotsData as any).data?.map((depot: any) => (
-                  <option key={depot.id} value={depot.id}>
-                    {depot.name}
-                  </option>
-                ))}
-            </select>
+            <Select<{ value: string; label: string }>
+              value={
+                selectedDepotId
+                  ? {
+                      value: selectedDepotId,
+                      label:
+                        (depotsData as any)?.data?.find(
+                          (d: any) => d.id === selectedDepotId
+                        )?.name || selectedDepotId,
+                    }
+                  : null
+              }
+              onChange={(option: { value: string; label: string } | null) =>
+                setSelectedDepotId(option?.value || '')
+              }
+              options={[
+                { value: '', label: 'All Depots' },
+                ...((depotsData as any)?.data?.map((depot: any) => ({
+                  value: depot.id,
+                  label: depot.name,
+                })) || []),
+              ]}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              isClearable
+              styles={{
+                control: (base: any, state: any) => ({
+                  ...base,
+                  backgroundColor: 'var(--select-bg)',
+                  borderColor: state.isFocused
+                    ? '#3b82f6'
+                    : 'var(--select-border)',
+                  '&:hover': { borderColor: '#3b82f6' },
+                }),
+                menu: (base: any) => ({
+                  ...base,
+                  backgroundColor: 'var(--select-bg)',
+                }),
+                option: (base: any, state: any) => ({
+                  ...base,
+                  backgroundColor: state.isFocused
+                    ? '#3b82f6'
+                    : state.isSelected
+                      ? '#2563eb'
+                      : 'transparent',
+                  color:
+                    state.isFocused || state.isSelected
+                      ? 'white'
+                      : 'var(--select-text)',
+                }),
+                singleValue: (base: any) => ({
+                  ...base,
+                  color: 'var(--select-text)',
+                }),
+              }}
+            />
           </div>
 
           <div>
@@ -375,20 +486,84 @@ export function Inventory() {
 
             <div>
               <label className="block text-sm font-medium mb-2">Reason *</label>
-              <textarea
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                rows={3}
-                value={adjustFormData.reason}
-                onChange={e =>
+              <Select<{ value: string; label: string }>
+                value={
+                  selectedReasonOption
+                    ? {
+                        value: selectedReasonOption.value,
+                        label: selectedReasonOption.label,
+                      }
+                    : null
+                }
+                onChange={(option: { value: string; label: string } | null) =>
                   setAdjustFormData({
                     ...adjustFormData,
-                    reason: e.target.value,
+                    reason: option?.value || '',
+                    customReason:
+                      option?.value !== 'other'
+                        ? ''
+                        : adjustFormData.customReason,
                   })
                 }
-                placeholder="Reason for adjustment..."
+                options={INVENTORY_ADJUSTMENT_REASONS}
+                className="react-select-container"
+                classNamePrefix="react-select"
+                placeholder="Select a reason..."
+                isSearchable
                 required
+                styles={{
+                  control: (base: any, state: any) => ({
+                    ...base,
+                    backgroundColor: 'var(--select-bg)',
+                    borderColor: state.isFocused
+                      ? '#3b82f6'
+                      : 'var(--select-border)',
+                    '&:hover': { borderColor: '#3b82f6' },
+                  }),
+                  menu: (base: any) => ({
+                    ...base,
+                    backgroundColor: 'var(--select-bg)',
+                  }),
+                  option: (base: any, state: any) => ({
+                    ...base,
+                    backgroundColor: state.isFocused
+                      ? '#3b82f6'
+                      : state.isSelected
+                        ? '#2563eb'
+                        : 'transparent',
+                    color:
+                      state.isFocused || state.isSelected
+                        ? 'white'
+                        : 'var(--select-text)',
+                  }),
+                  singleValue: (base: any) => ({
+                    ...base,
+                    color: 'var(--select-text)',
+                  }),
+                }}
               />
             </div>
+
+            {isOtherSelected && (
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Specify Reason *
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  rows={3}
+                  value={adjustFormData.customReason}
+                  onChange={e =>
+                    setAdjustFormData({
+                      ...adjustFormData,
+                      customReason: e.target.value,
+                    })
+                  }
+                  placeholder="Please specify the reason for adjustment..."
+                  required={isOtherSelected}
+                />
+              </div>
+            )}
 
             <div className="flex justify-end space-x-2">
               <Button

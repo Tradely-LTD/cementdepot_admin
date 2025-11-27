@@ -13,6 +13,7 @@ import {
   Warehouse,
   Route,
   CircleDollarSign,
+  LogOut,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -230,7 +231,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
           {/* User Profile */}
           <div className="p-4 border-t border-gray-700">
-            <div className="flex items-center gap-3">
+            <Link
+              to="/profile"
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-3 hover:bg-gray-800 rounded-lg p-2 -m-2 transition-colors cursor-pointer"
+            >
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-semibold">
                 {initials}
               </div>
@@ -246,24 +251,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   </p>
                 </div>
               )}
-              {!sidebarCollapsed && (
-                <button className="text-gray-400 hover:text-white">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                    />
-                  </svg>
-                </button>
-              )}
-            </div>
+            </Link>
           </div>
         </div>
       </aside>
@@ -289,10 +277,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <div className="flex items-center gap-3">
               <NotificationPanel />
               <Button
-                variant="outline"
+                variant="destructive"
                 size="sm"
                 onClick={() => dispatch(logout())}
+                className="bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 dark:bg-red-700 dark:hover:bg-red-800"
               >
+                <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </Button>
             </div>
