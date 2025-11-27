@@ -46,6 +46,18 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: () => ({ url: `/api/v1/auth/me` }),
     }),
+    putApiV1AuthProfile: build.mutation<
+      PutApiV1AuthProfileApiResponse,
+      PutApiV1AuthProfileApiArg
+    >({
+      query: () => ({ url: `/api/v1/auth/profile`, method: 'PUT' }),
+    }),
+    putApiV1AuthPassword: build.mutation<
+      PutApiV1AuthPasswordApiResponse,
+      PutApiV1AuthPasswordApiArg
+    >({
+      query: () => ({ url: `/api/v1/auth/password`, method: 'PUT' }),
+    }),
     getApiV1Products: build.query<
       GetApiV1ProductsApiResponse,
       GetApiV1ProductsApiArg
@@ -56,6 +68,7 @@ const injectedRtkApi = api.injectEndpoints({
           page: queryArg.page,
           limit: queryArg.limit,
           brand: queryArg.brand,
+          brandId: queryArg.brandId,
           isActive: queryArg.isActive,
         },
       }),
@@ -98,6 +111,7 @@ const injectedRtkApi = api.injectEndpoints({
           limit: queryArg.limit,
           category: queryArg.category,
           brand: queryArg.brand,
+          brandId: queryArg.brandId,
           depotId: queryArg.depotId,
           isActive: queryArg.isActive,
           search: queryArg.search,
@@ -169,6 +183,55 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: queryArg => ({
         url: `/api/v1/products/pricing-rules/${queryArg.id}`,
+        method: 'DELETE',
+      }),
+    }),
+    getApiV1Brands: build.query<
+      GetApiV1BrandsApiResponse,
+      GetApiV1BrandsApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/brands`,
+        params: {
+          page: queryArg.page,
+          limit: queryArg.limit,
+          search: queryArg.search,
+          isActive: queryArg.isActive,
+        },
+      }),
+    }),
+    postApiV1Brands: build.mutation<
+      PostApiV1BrandsApiResponse,
+      PostApiV1BrandsApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/brands`,
+        method: 'POST',
+        body: queryArg.brandCreate,
+      }),
+    }),
+    getApiV1BrandsById: build.query<
+      GetApiV1BrandsByIdApiResponse,
+      GetApiV1BrandsByIdApiArg
+    >({
+      query: queryArg => ({ url: `/api/v1/brands/${queryArg.id}` }),
+    }),
+    putApiV1BrandsById: build.mutation<
+      PutApiV1BrandsByIdApiResponse,
+      PutApiV1BrandsByIdApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/brands/${queryArg.id}`,
+        method: 'PUT',
+        body: queryArg.brandUpdate,
+      }),
+    }),
+    deleteApiV1BrandsById: build.mutation<
+      DeleteApiV1BrandsByIdApiResponse,
+      DeleteApiV1BrandsByIdApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/brands/${queryArg.id}`,
         method: 'DELETE',
       }),
     }),
@@ -888,6 +951,10 @@ export type GetApiV1AuthMeApiResponse =
     data?: User;
   };
 export type GetApiV1AuthMeApiArg = void;
+export type PutApiV1AuthProfileApiResponse = unknown;
+export type PutApiV1AuthProfileApiArg = void;
+export type PutApiV1AuthPasswordApiResponse = unknown;
+export type PutApiV1AuthPasswordApiArg = void;
 export type GetApiV1ProductsApiResponse =
   /** status 200 Products retrieved successfully */ {
     success?: boolean;
@@ -899,6 +966,8 @@ export type GetApiV1ProductsApiArg = {
   page?: number;
   limit?: number;
   brand?: string;
+  /** Filter by brand ID */
+  brandId?: string;
   isActive?: boolean;
 };
 export type PostApiV1ProductsApiResponse =
@@ -941,6 +1010,8 @@ export type GetApiV1ProductsMyApiArg = {
   category?: 'cement' | 'building_materials';
   /** Filter by brand name */
   brand?: string;
+  /** Filter by brand ID */
+  brandId?: string;
   /** Filter by depot ID */
   depotId?: string;
   /** Filter by active status */
@@ -1015,6 +1086,48 @@ export type PutApiV1ProductsPricingRulesByIdApiArg = {
 export type DeleteApiV1ProductsPricingRulesByIdApiResponse =
   /** status 200 Pricing rule deleted successfully */ Success;
 export type DeleteApiV1ProductsPricingRulesByIdApiArg = {
+  id: string;
+};
+export type GetApiV1BrandsApiResponse =
+  /** status 200 Brands retrieved successfully */ {
+    success?: boolean;
+    message?: string;
+    data?: Brand[];
+    pagination?: Pagination;
+  };
+export type GetApiV1BrandsApiArg = {
+  page?: number;
+  limit?: number;
+  /** Filter by brand name */
+  search?: string;
+  /** Filter by active status */
+  isActive?: boolean;
+};
+export type PostApiV1BrandsApiResponse =
+  /** status 201 Brand created successfully */ Success & {
+    data?: Brand;
+  };
+export type PostApiV1BrandsApiArg = {
+  brandCreate: BrandCreate;
+};
+export type GetApiV1BrandsByIdApiResponse =
+  /** status 200 Brand retrieved successfully */ Success & {
+    data?: Brand;
+  };
+export type GetApiV1BrandsByIdApiArg = {
+  id: string;
+};
+export type PutApiV1BrandsByIdApiResponse =
+  /** status 200 Brand updated successfully */ Success & {
+    data?: Brand;
+  };
+export type PutApiV1BrandsByIdApiArg = {
+  id: string;
+  brandUpdate: BrandUpdate;
+};
+export type DeleteApiV1BrandsByIdApiResponse =
+  /** status 200 Brand deleted successfully */ Success;
+export type DeleteApiV1BrandsByIdApiArg = {
   id: string;
 };
 export type GetApiV1DepotsFindNearestApiResponse =
@@ -1939,6 +2052,7 @@ export type Product = {
   id?: string;
   name?: string;
   brand?: string;
+  brandId?: string | null;
   description?: string;
   category?: 'cement' | 'building_materials';
   sellerId?: string;
@@ -1975,7 +2089,10 @@ export type Pagination = {
 };
 export type ProductCreate = {
   name: string;
-  brand: string;
+  /** Brand name (used only when brandId is not provided) */
+  brand?: string;
+  /** Brand identifier. Provide either brandId or brand name. */
+  brandId?: string;
   description?: string;
   category: 'cement' | 'building_materials';
   /** ID of the seller (optional - auto-assigned for sellers, required for admins creating products for other sellers) */
@@ -1993,6 +2110,7 @@ export type ProductCreate = {
 export type ProductUpdate = {
   name?: string;
   brand?: string;
+  brandId?: string;
   description?: string;
   category?: 'cement' | 'building_materials';
   sellerId?: string;
@@ -2004,6 +2122,31 @@ export type ProductUpdate = {
   imageUrl?: string;
   thumbnailUrl?: string;
   sku?: string;
+  isActive?: boolean;
+};
+export type Brand = {
+  id?: string;
+  name?: string;
+  slug?: string;
+  description?: string;
+  logoUrl?: string;
+  websiteUrl?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+export type BrandCreate = {
+  name: string;
+  description?: string;
+  logoUrl?: string;
+  websiteUrl?: string;
+  isActive?: boolean;
+};
+export type BrandUpdate = {
+  name?: string;
+  description?: string;
+  logoUrl?: string;
+  websiteUrl?: string;
   isActive?: boolean;
 };
 export type Depot = {
@@ -2148,6 +2291,8 @@ export const {
   usePostApiV1AuthRefreshMutation,
   usePostApiV1AuthLogoutMutation,
   useGetApiV1AuthMeQuery,
+  usePutApiV1AuthProfileMutation,
+  usePutApiV1AuthPasswordMutation,
   useGetApiV1ProductsQuery,
   usePostApiV1ProductsMutation,
   useGetApiV1ProductsBrandsQuery,
@@ -2161,6 +2306,11 @@ export const {
   usePostApiV1ProductsByIdPricingRulesMutation,
   usePutApiV1ProductsPricingRulesByIdMutation,
   useDeleteApiV1ProductsPricingRulesByIdMutation,
+  useGetApiV1BrandsQuery,
+  usePostApiV1BrandsMutation,
+  useGetApiV1BrandsByIdQuery,
+  usePutApiV1BrandsByIdMutation,
+  useDeleteApiV1BrandsByIdMutation,
   useGetApiV1DepotsFindNearestQuery,
   useGetApiV1DepotsStatsQuery,
   useGetApiV1DepotsQuery,

@@ -5,6 +5,7 @@ import {
   usePatchApiV1NotificationsReadAllMutation,
 } from '@/store/coreApiWithTags';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export const useNotifications = () => {
   const [page, setPage] = useState(1);
@@ -33,13 +34,16 @@ export const useNotifications = () => {
   const handleMarkAsRead = async (id: string) => {
     try {
       await markAsRead({ id }).unwrap();
+      toast.success('Notification marked as read');
       refetch();
       refetchUnreadCount();
       return { success: true };
     } catch (error: any) {
+      const errorMessage = error?.data?.message || 'Failed to mark as read';
+      toast.error(errorMessage);
       return {
         success: false,
-        error: error?.data?.message || 'Failed to mark as read',
+        error: errorMessage,
       };
     }
   };
@@ -47,20 +51,23 @@ export const useNotifications = () => {
   const handleMarkAllAsRead = async () => {
     try {
       await markAllAsRead().unwrap();
+      toast.success('All notifications marked as read');
       refetch();
       refetchUnreadCount();
       return { success: true };
     } catch (error: any) {
+      const errorMessage = error?.data?.message || 'Failed to mark all as read';
+      toast.error(errorMessage);
       return {
         success: false,
-        error: error?.data?.message || 'Failed to mark all as read',
+        error: errorMessage,
       };
     }
   };
 
   return {
     notifications: data,
-    unreadCount: (unreadCountData as any)?.count || 0,
+    unreadCount: (unreadCountData as any)?.data?.count || 0,
     isLoading,
     page,
     setPage,

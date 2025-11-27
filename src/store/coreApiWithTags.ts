@@ -48,6 +48,23 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
     getApiV1ProductsCategories: {
       providesTags: [{ type: TAGS.PRODUCT, id: 'CATEGORIES' }],
     },
+    getApiV1Brands: {
+      providesTags: result =>
+        result && (result as any).data
+          ? [
+              ...(result as any).data.map((item: any) => ({
+                type: TAGS.BRAND,
+                id: item.id,
+              })),
+              { type: TAGS.BRAND, id: LIST_ID },
+            ]
+          : [{ type: TAGS.BRAND, id: LIST_ID }],
+    },
+    getApiV1BrandsById: {
+      providesTags: (_result, _error, arg) => [
+        { type: TAGS.BRAND, id: arg.id },
+      ],
+    },
     getApiV1ProductsByIdPricingRules: {
       providesTags: (_result, _error, arg) => [
         { type: TAGS.PRODUCT, id: `PRICING-${arg.id}` },
@@ -64,6 +81,9 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
         { type: TAGS.PRODUCT, id: 'STATS' },
       ],
     },
+    postApiV1Brands: {
+      invalidatesTags: [{ type: TAGS.BRAND, id: LIST_ID }],
+    },
     putApiV1ProductsById: {
       invalidatesTags: (_result, _error, arg) => [
         { type: TAGS.PRODUCT, id: arg.id },
@@ -71,10 +91,22 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
         { type: TAGS.PRODUCT, id: 'STATS' },
       ],
     },
+    putApiV1BrandsById: {
+      invalidatesTags: (_result, _error, arg) => [
+        { type: TAGS.BRAND, id: arg.id },
+        { type: TAGS.BRAND, id: LIST_ID },
+      ],
+    },
     deleteApiV1ProductsById: {
       invalidatesTags: [
         { type: TAGS.PRODUCT, id: LIST_ID },
         { type: TAGS.PRODUCT, id: 'STATS' },
+      ],
+    },
+    deleteApiV1BrandsById: {
+      invalidatesTags: (_result, _error, arg) => [
+        { type: TAGS.BRAND, id: arg.id },
+        { type: TAGS.BRAND, id: LIST_ID },
       ],
     },
     postApiV1ProductsByIdPricingRules: {
@@ -567,6 +599,13 @@ export const {
   usePutApiV1ProductsPricingRulesByIdMutation,
   useDeleteApiV1ProductsPricingRulesByIdMutation,
 
+  // Brands
+  useGetApiV1BrandsQuery,
+  useGetApiV1BrandsByIdQuery,
+  usePostApiV1BrandsMutation,
+  usePutApiV1BrandsByIdMutation,
+  useDeleteApiV1BrandsByIdMutation,
+
   // Depots
   useGetApiV1DepotsQuery,
   useGetApiV1DepotsByIdQuery,
@@ -660,6 +699,9 @@ export type {
   PostApiV1PricingCalculateOrderApiArg,
   ProductCreate,
   ProductUpdate,
+  Brand,
+  BrandCreate,
+  BrandUpdate,
   DeliveryRoute,
   CreateDeliveryRoute,
   UpdateDeliveryRoute,

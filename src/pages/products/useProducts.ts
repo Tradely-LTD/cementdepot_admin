@@ -11,7 +11,7 @@ import {
 
 interface ProductFilters {
   category?: string;
-  brand?: string;
+  brandId?: string;
   depotId?: string;
   isActive?: boolean;
   search?: string;
@@ -27,7 +27,7 @@ export const useProducts = () => {
     page,
     limit,
     category: filters.category,
-    brand: filters.brand,
+    brandId: filters.brandId,
     depotId: filters.depotId,
     isActive:
       filters.isActive !== undefined ? String(filters.isActive) : undefined,

@@ -13,6 +13,7 @@ export const TAGS = {
   AUTH: 'AUTH',
   USER: 'USER',
   PRODUCT: 'PRODUCT',
+  BRAND: 'BRAND',
   DEPOT: 'DEPOT',
   INVENTORY: 'INVENTORY',
   ORDER: 'ORDER',

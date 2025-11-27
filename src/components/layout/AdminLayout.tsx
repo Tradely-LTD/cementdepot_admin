@@ -14,6 +14,7 @@ import {
   Route,
   CircleDollarSign,
   LogOut,
+  Tag,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ interface MenuItem {
   label: string;
   icon: LucideIcon;
   path: string;
+  adminOnly?: boolean;
 }
 
 export const MENU_ITEMS: MenuItem[] = [
@@ -40,6 +42,13 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'Products',
     icon: Package,
     path: '/products',
+  },
+  {
+    id: 'brands',
+    label: 'Brands',
+    icon: Tag,
+    path: '/brands',
+    adminOnly: true,
   },
   {
     id: 'depots',
@@ -76,6 +85,7 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'Payments',
     icon: CreditCard,
     path: '/payments',
+    adminOnly: true,
   },
   {
     id: 'analysis',
@@ -106,8 +116,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   // Filter menu items based on user role
   const filteredMenuItems = MENU_ITEMS.filter(item => {
-    // Only show Payments to admins
-    if (item.id === 'payments' && !isAdmin) {
+    if (item.adminOnly && !isAdmin) {
       return false;
     }
     return true;
@@ -145,10 +154,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-700 rounded flex items-center justify-center font-bold text-lg">
-                M
+                C
               </div>
               {!sidebarCollapsed && (
-                <span className="font-semibold text-lg">Mate</span>
+                <span className="font-semibold text-lg">CementDepot</span>
               )}
             </div>
 
@@ -259,19 +268,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm z-10">
+        <header className="bg-[#1a1d29] text-white shadow-sm z-10">
           <div className="flex items-center justify-between px-4 lg:px-6 py-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              className="lg:hidden text-gray-200 hover:text-white"
             >
               <Menu size={24} />
             </button>
 
             <div className="flex-1 lg:ml-0 ml-4">
-              <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 dark:text-white">
-                {pageTitle}
-              </h1>
+              <h1 className="text-xl lg:text-2xl font-semibold">{pageTitle}</h1>
             </div>
 
             <div className="flex items-center gap-3">
@@ -280,7 +287,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 variant="destructive"
                 size="sm"
                 onClick={() => dispatch(logout())}
-                className="bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+                className="bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout

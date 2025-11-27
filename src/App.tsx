@@ -15,6 +15,7 @@ import { NotFound } from '@/pages/NotFound';
 import type { RootState } from '@/store/store';
 import { DeliveryRoutes } from '@/pages/delivery-routes';
 import { Profile } from '@/pages/profile';
+import { Brands } from '@/pages/brands';
 // import { Pricing } from '@/pages/pricing';
 import { useEffect } from 'react';
 import { logout } from '@/pages/admin/auth-slice';
@@ -99,6 +100,14 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/products" element={<Products />} />
+                    <Route
+                      path="/brands"
+                      element={
+                        <AdminRoute>
+                          <Brands />
+                        </AdminRoute>
+                      }
+                    />
                     <Route path="/depots" element={<Depots />} />
                     <Route path="/inventory" element={<Inventory />} />
                     <Route path="/orders" element={<Orders />} />

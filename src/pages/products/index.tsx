@@ -3,10 +3,10 @@ import React from 'react';
 import { useProducts } from './useProducts';
 import {
   useGetApiV1ProductsStatsQuery,
-  useGetApiV1ProductsBrandsQuery,
   useGetApiV1ProductsCategoriesQuery,
   useGetApiV1DepotsQuery,
   useGetApiV1UsersQuery,
+  useGetApiV1BrandsQuery,
 } from '@/store/coreApiWithTags';
 import { useUserSlice } from '@/pages/admin/auth-slice';
 import { Button } from '@/components/ui/button';
@@ -77,10 +77,19 @@ export function Products() {
   const stats = statsData?.data;
 
   // Fetch brands, categories, and depots for filters (no pagination - get all)
-  const { data: brandsData } = useGetApiV1ProductsBrandsQuery({
-    isActive: true,
-  });
-  const brands = brandsData?.data || [];
+  const { data: brandsData, isLoading: isLoadingBrands } =
+    useGetApiV1BrandsQuery({
+      page: 1,
+      limit: 100,
+      isActive: true,
+    });
+  const brands = (brandsData as any)?.data || [];
+  const brandOptions = brands
+    .filter((brand: any) => brand?.id && brand?.name)
+    .map((brand: any) => ({
+      value: brand.id,
+      label: brand.name,
+    }));
 
   const { data: categoriesData } = useGetApiV1ProductsCategoriesQuery();
   const categories = categoriesData?.data || [];
@@ -167,7 +176,7 @@ export function Products() {
               key="create-product-form"
               defaultValues={{
                 name: '',
-                brand: '',
+                brandId: '',
                 description: '',
                 basePrice: '0',
                 unit: 'bag',
@@ -183,6 +192,8 @@ export function Products() {
               sellers={sellers}
               categories={categories}
               depots={depots}
+              brands={brandOptions}
+              isLoadingBrands={isLoadingBrands}
               currentUserId={currentUserId}
             />
           </DialogContent>
@@ -268,7 +279,7 @@ export function Products() {
             </h3>
           </div>
           {(filters.category ||
-            filters.brand ||
+            filters.brandId ||
             filters.depotId ||
             filters.isActive !== undefined ||
             filters.search) && (
@@ -358,24 +369,24 @@ export function Products() {
             <label className="block text-sm font-medium mb-2">Brand</label>
             <Select
               value={
-                filters.brand
-                  ? { value: filters.brand, label: filters.brand }
+                filters.brandId
+                  ? brandOptions.find(
+                      option => option.value === filters.brandId
+                    ) || {
+                      value: filters.brandId,
+                      label: 'Selected Brand',
+                    }
                   : { value: '', label: 'All Brands' }
               }
               onChange={option =>
                 updateFilters({
-                  brand: option?.value === '' ? undefined : option?.value,
+                  brandId: option?.value === '' ? undefined : option?.value,
                 })
               }
-              options={[
-                { value: '', label: 'All Brands' },
-                ...brands.map((brand: string) => ({
-                  value: brand,
-                  label: brand,
-                })),
-              ]}
+              options={[{ value: '', label: 'All Brands' }, ...brandOptions]}
               className="react-select-container"
               classNamePrefix="react-select"
+              isDisabled={isLoadingBrands}
               styles={{
                 control: (base, state) => ({
                   ...base,
@@ -633,7 +644,7 @@ export function Products() {
               key={`edit-product-form-${editingProduct?.id}`}
               defaultValues={{
                 name: editingProduct?.name || '',
-                brand: editingProduct?.brand || '',
+                brandId: editingProduct?.brandId || '',
                 description: editingProduct?.description || '',
                 basePrice: editingProduct?.basePrice || '0',
                 unit: editingProduct?.unit || 'bag',
@@ -651,6 +662,8 @@ export function Products() {
               sellers={sellers}
               categories={categories}
               depots={depots}
+              brands={brandOptions}
+              isLoadingBrands={isLoadingBrands}
               editingProduct={editingProduct}
               currentUserId={currentUserId}
             />
@@ -712,6 +725,8 @@ interface ProductFormProps {
   sellers: any[];
   categories: string[];
   depots: any[];
+  brands: Array<{ value: string; label: string }>;
+  isLoadingBrands?: boolean;
   editingProduct?: any;
   currentUserId?: string;
 }
@@ -722,7 +737,7 @@ const createProductSchema = (isAdmin: boolean) =>
       .string()
       .required('Product name is required')
       .min(3, 'Product name must be at least 3 characters'),
-    brand: yup.string().optional(),
+    brandId: yup.string().required('Brand is required'),
     description: yup.string().optional(),
     basePrice: yup
       .string()
@@ -756,6 +771,8 @@ function ProductForm({
   sellers,
   categories,
   depots,
+  brands,
+  isLoadingBrands,
   editingProduct,
   currentUserId,
 }: ProductFormProps) {
@@ -813,11 +830,20 @@ function ProductForm({
         </div>
 
         <div>
-          <ControlledFormField
-            name="brand"
+          <ControlledSelectField
+            name="brandId"
             label="Brand"
-            placeholder="Dangote"
+            options={brands}
+            placeholder={isLoadingBrands ? 'Loading brands...' : 'Select Brand'}
             icon={Tag}
+            isRequired
+            isClearable={false}
+            disabled={isLoadingBrands || brands.length === 0}
+            helperText={
+              !isLoadingBrands && brands.length === 0
+                ? 'No brands available. Contact an admin.'
+                : undefined
+            }
           />
         </div>
 
@@ -942,7 +968,7 @@ function ProductForm({
       schema={schema}
       defaultValues={{
         name: defaultValues?.name || '',
-        brand: defaultValues?.brand || '',
+        brandId: defaultValues?.brandId || '',
         description: defaultValues?.description || '',
         basePrice: defaultValues?.basePrice || '0',
         unit: defaultValues?.unit || 'bag',

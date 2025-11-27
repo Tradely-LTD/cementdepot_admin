@@ -1,6 +1,6 @@
 import { useNotifications } from './useNotifications';
 import { Button } from '@/components/ui/button';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useState } from 'react';
 
 export function NotificationPanel() {
   const {
@@ -18,13 +19,16 @@ export function NotificationPanel() {
     setUnreadOnly,
     handleMarkAsRead,
     handleMarkAllAsRead,
+    isMarkingAsRead,
+    isMarkingAllAsRead,
   } = useNotifications();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-          <Bell className="h-5 w-5" />
+          <Bell className="h-5 w-5 text-gray-200 dark:text-gray-300 hover:text-gray-400 dark:hover:text-white" />
           {unreadCount > 0 && (
             <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -36,7 +40,7 @@ export function NotificationPanel() {
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>Notifications</DialogTitle>
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 my-5">
               <Button
                 size="sm"
                 variant="outline"
@@ -49,9 +53,14 @@ export function NotificationPanel() {
                   size="sm"
                   variant="outline"
                   onClick={handleMarkAllAsRead}
+                  disabled={isMarkingAllAsRead}
                 >
-                  <CheckCheck className="h-4 w-4 mr-1" />
-                  Mark All Read
+                  {isMarkingAllAsRead ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <CheckCheck className="h-4 w-4 mr-1" />
+                  )}
+                  {isMarkingAllAsRead ? 'Updating...' : 'Mark All Read'}
                 </Button>
               )}
             </div>
@@ -87,10 +96,21 @@ export function NotificationPanel() {
                   </div>
                   {!notification.isRead && (
                     <button
-                      onClick={() => handleMarkAsRead(notification.id)}
-                      className="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                      onClick={async () => {
+                        setSelectedId(notification.id);
+                        await handleMarkAsRead(notification.id);
+                        setSelectedId(null);
+                      }}
+                      className="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50"
+                      disabled={
+                        isMarkingAsRead && selectedId === notification.id
+                      }
                     >
-                      <CheckCheck className="h-4 w-4" />
+                      {isMarkingAsRead && selectedId === notification.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <CheckCheck className="h-4 w-4" />
+                      )}
                     </button>
                   )}
                 </div>
