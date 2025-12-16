@@ -441,7 +441,7 @@ export function Profile() {
         open={isPasswordDialogOpen}
         onOpenChange={setIsPasswordDialogOpen}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Change Password</DialogTitle>
           </DialogHeader>

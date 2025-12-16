@@ -138,7 +138,7 @@ export function Users() {
               Add User
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create User</DialogTitle>
             </DialogHeader>
@@ -360,7 +360,7 @@ export function Users() {
         open={!!editingUser}
         onOpenChange={open => (!open ? closeEditDialog() : null)}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
           </DialogHeader>

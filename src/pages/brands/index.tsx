@@ -35,12 +35,13 @@ import {
   Plus,
   Tag,
   FileText,
-  Image as ImageIcon,
   ExternalLink,
   Edit,
   Trash2,
   MoreHorizontal,
 } from 'lucide-react';
+import FileUploader from '@/components/file-uploader';
+import { useUploadsFileMutation } from '@/store/uploads';
 
 const statusOptions = [
   { value: undefined, label: 'All Status' },
@@ -93,7 +94,7 @@ export function Brands() {
               Add Brand
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create Brand</DialogTitle>
             </DialogHeader>
@@ -294,7 +295,7 @@ export function Brands() {
         open={!!editingBrand}
         onOpenChange={open => (!open ? closeEditDialog() : null)}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Brand</DialogTitle>
           </DialogHeader>
@@ -358,6 +359,8 @@ interface BrandFormProps {
 }
 
 function BrandForm({ defaultValues, onSubmit, isLoading }: BrandFormProps) {
+  const [uploadsFile] = useUploadsFileMutation();
+
   return (
     <Form
       schema={brandValidationSchema}
@@ -373,7 +376,7 @@ function BrandForm({ defaultValues, onSubmit, isLoading }: BrandFormProps) {
       isLoading={isLoading}
       className="space-y-3"
     >
-      {() => (
+      {({ watch, setValue }) => (
         <div className="space-y-3">
           <ControlledFormField
             name="name"
@@ -389,12 +392,18 @@ function BrandForm({ defaultValues, onSubmit, isLoading }: BrandFormProps) {
             icon={FileText}
             textarea
           />
-          <ControlledFormField
-            name="logoUrl"
-            label="Logo URL"
-            placeholder="https://example.com/logo.png"
-            icon={ImageIcon}
-          />
+          <div>
+            <FileUploader
+              watch={watch}
+              setValue={setValue}
+              uploadsFile={uploadsFile}
+              existingData={defaultValues}
+              fieldName="logoUrl"
+              isMultiple={false}
+              label="Brand Logo"
+              accept="image/*"
+            />
+          </div>
           <ControlledFormField
             name="websiteUrl"
             label="Website"

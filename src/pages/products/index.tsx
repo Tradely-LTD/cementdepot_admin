@@ -33,12 +33,17 @@ import {
   Tag,
   DollarSign,
   FileText,
-  Image,
   Building2,
   MapPin,
   ShoppingBag,
 } from 'lucide-react';
 import type { ProductCreate, ProductUpdate } from '@/store/coreApiWithTags';
+
+// Extended ProductCreate type to include initialStockQuantity
+type ExtendedProductCreate = ProductCreate & {
+  initialStockQuantity?: number;
+  isActive?: boolean;
+};
 import Select from 'react-select';
 import ReactPaginate from 'react-paginate';
 import {
@@ -48,6 +53,8 @@ import {
   useFormContext,
 } from '@/components/forms';
 import * as yup from 'yup';
+import FileUploader from '@/components/file-uploader';
+import { useUploadsFileMutation } from '@/store/uploads';
 
 export function Products() {
   const {
@@ -94,10 +101,6 @@ export function Products() {
   const { data: categoriesData } = useGetApiV1ProductsCategoriesQuery();
   const categories = categoriesData?.data || [];
 
-  // Get all depots without pagination (no page/limit params)
-  // Backend automatically filters by sellerId for sellers
-  // Admin sees all depots, Seller sees only their own depots
-  // The backend controller automatically adds sellerId filter for sellers
   const { data: depotsData } = useGetApiV1DepotsQuery({});
   const depots = (depotsData as any)?.data || [];
 
@@ -113,9 +116,7 @@ export function Products() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
-  const handleProductSubmit = async (
-    data: ProductCreate & { isActive?: boolean }
-  ) => {
+  const handleProductSubmit = async (data: ExtendedProductCreate) => {
     if (editingProduct) {
       const result = await handleUpdateProduct(
         editingProduct.id,
@@ -168,7 +169,7 @@ export function Products() {
               Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Product</DialogTitle>
             </DialogHeader>
@@ -314,7 +315,7 @@ export function Products() {
                     }
                   : { value: '', label: 'All Categories' }
               }
-              onChange={option =>
+              onChange={(option: any) =>
                 updateFilters({
                   category: option?.value === '' ? undefined : option?.value,
                 })
@@ -371,14 +372,14 @@ export function Products() {
               value={
                 filters.brandId
                   ? brandOptions.find(
-                      option => option.value === filters.brandId
+                      (option: any) => option.value === filters.brandId
                     ) || {
                       value: filters.brandId,
                       label: 'Selected Brand',
                     }
                   : { value: '', label: 'All Brands' }
               }
-              onChange={option =>
+              onChange={(option: any) =>
                 updateFilters({
                   brandId: option?.value === '' ? undefined : option?.value,
                 })
@@ -436,7 +437,7 @@ export function Products() {
                     : { value: '', label: 'All Depots' }
                   : { value: '', label: 'All Depots' }
               }
-              onChange={option =>
+              onChange={(option: any) =>
                 updateFilters({
                   depotId: option?.value === '' ? undefined : option?.value,
                 })
@@ -495,7 +496,7 @@ export function Products() {
                     ? { value: 'true', label: 'Active' }
                     : { value: 'false', label: 'Inactive' }
               }
-              onChange={option => {
+              onChange={(option: any) => {
                 const value = option?.value || '';
                 updateFilters({
                   isActive: value === '' ? undefined : value === 'true',
@@ -636,7 +637,7 @@ export function Products() {
       {/* Edit Dialog */}
       {editingProduct && (
         <Dialog open={!!editingProduct} onOpenChange={handleEditDialogChange}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Product</DialogTitle>
             </DialogHeader>
@@ -718,8 +719,8 @@ export function Products() {
 }
 
 interface ProductFormProps {
-  defaultValues?: Partial<ProductCreate & { isActive?: boolean }>;
-  onSubmit: (data: ProductCreate & { isActive?: boolean }) => Promise<void>;
+  defaultValues?: Partial<ExtendedProductCreate>;
+  onSubmit: (data: ExtendedProductCreate) => Promise<void>;
   isLoading: boolean;
   isAdmin: boolean;
   sellers: any[];
@@ -761,8 +762,6 @@ const createProductSchema = (isAdmin: boolean) =>
       .optional(),
   });
 
-type ProductFormData = yup.InferType<ReturnType<typeof createProductSchema>>;
-
 function ProductForm({
   defaultValues,
   onSubmit,
@@ -777,7 +776,8 @@ function ProductForm({
   currentUserId,
 }: ProductFormProps) {
   const schema = createProductSchema(isAdmin);
-
+  const [uploadsFile] = useUploadsFileMutation();
+  console.log('editingProduct', editingProduct);
   const categoryOptions = categories.map((cat: string) => ({
     value: cat,
     label: cat.charAt(0).toUpperCase() + cat.slice(1).replace('_', ' '),
@@ -936,17 +936,26 @@ function ProductForm({
             placeholder="Product description"
             icon={FileText}
             textarea
-            rows={2}
           />
         </div>
 
         <div className="col-span-2">
-          <ControlledFormField
+          {/* <ControlledFormField
             name="imageUrl"
             label="Image URL"
             type="url"
             placeholder="https://example.com/image.jpg"
             icon={Image}
+          /> */}
+          <FileUploader
+            watch={watch}
+            setValue={setValue}
+            uploadsFile={uploadsFile}
+            existingData={editingProduct}
+            fieldName="imageUrl"
+            isMultiple={false}
+            label="Thumbnail Image"
+            accept="image/*"
           />
         </div>
 
