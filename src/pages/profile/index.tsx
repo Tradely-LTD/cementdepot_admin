@@ -11,7 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { User, Mail, Phone, Building, MapPin, Lock, Edit2 } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Phone,
+  Building,
+  MapPin,
+  Lock,
+  Edit2,
+  RollerCoaster,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import config from '@/utils/config';
 
@@ -243,7 +252,7 @@ export function Profile() {
 
               <div className="flex items-start gap-3">
                 <div className="h-5 w-5 text-gray-400 mt-0.5 flex items-center justify-center">
-                  <span className="text-xs font-semibold">ROLE</span>
+                  <RollerCoaster />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">

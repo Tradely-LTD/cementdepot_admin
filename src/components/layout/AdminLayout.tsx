@@ -15,6 +15,7 @@ import {
   CircleDollarSign,
   LogOut,
   Tag,
+  Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,13 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'Brands',
     icon: Tag,
     path: '/brands',
+    adminOnly: true,
+  },
+  {
+    id: 'users',
+    label: 'Users',
+    icon: Users,
+    path: '/users',
     adminOnly: true,
   },
   {

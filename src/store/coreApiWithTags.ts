@@ -153,6 +153,11 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
             ]
           : [{ type: TAGS.AUTH, id: 'USERS_LIST' }],
     },
+    getApiV1UsersById: {
+      providesTags: (_result, _error, arg) => [{ type: TAGS.AUTH, id: arg.id }],
+    },
+
+    // Users - Mutations (handled manually below)
     getApiV1DepotsById: {
       providesTags: (_result, _error, arg) => [
         { type: TAGS.DEPOT, id: arg.id },
@@ -469,11 +474,11 @@ export const cementDepotApi = coreApi.enhanceEndpoints({
         { type: TAGS.PAYMENT, id: `ORDER-${arg.orderId}` },
       ],
     },
-    getApiV1PaymentsVerifyByReference: {
-      providesTags: (_result, _error, arg) => [
-        { type: TAGS.PAYMENT, id: `REF-${arg.reference}` },
-      ],
-    },
+    // getApiV1PaymentsVerifyByReference: {
+    //   providesTags: (_result, _error, arg) => [
+    //     { type: TAGS.PAYMENT, id: `REF-${arg.reference}` },
+    //   ],
+    // },
 
     // Payments - Mutations
     postApiV1PaymentsInitiate: {
@@ -617,6 +622,8 @@ export const {
   // Users
   useGetApiV1UsersQuery,
   useGetApiV1UsersByIdQuery,
+
+  // Depots
   useDeleteApiV1DepotsByIdMutation,
   usePostApiV1DepotsByIdVerifyMutation,
 
@@ -668,7 +675,7 @@ export const {
   useGetApiV1PaymentsQuery,
   useGetApiV1PaymentsByIdQuery,
   useGetApiV1PaymentsOrderByOrderIdQuery,
-  useGetApiV1PaymentsVerifyByReferenceQuery,
+  // useGetApiV1PaymentsVerifyByReferenceQuery, // Commented out due to OpenAPI codegen issues
   usePostApiV1PaymentsInitiateMutation,
   usePostApiV1PaymentsVerifyMutation,
   usePostApiV1PaymentsByIdRefundMutation,
@@ -689,6 +696,84 @@ export const {
   useGetApiV1ReportsPaymentsQuery,
   useGetApiV1ReportsPerformanceQuery,
 } = cementDepotApi;
+
+// Manually add user mutations since they're not being generated properly
+const userApi = cementDepotApi.injectEndpoints({
+  endpoints: builder => ({
+    createUser: builder.mutation<any, any>({
+      query: userData => ({
+        url: '/api/v1/users',
+        method: 'POST',
+        body: userData,
+      }),
+      invalidatesTags: [{ type: 'AUTH', id: 'USERS_LIST' }],
+    }),
+    updateUser: builder.mutation<any, { id: string; [key: string]: any }>({
+      query: ({ id, ...userData }) => ({
+        url: `/api/v1/users/${id}`,
+        method: 'PUT',
+        body: userData,
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'AUTH', id: arg.id },
+        { type: 'AUTH', id: 'USERS_LIST' },
+      ],
+    }),
+    deleteUser: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({
+        url: `/api/v1/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'AUTH', id: arg.id },
+        { type: 'AUTH', id: 'USERS_LIST' },
+      ],
+    }),
+    getUserKyc: builder.query<any, { id: string }>({
+      query: ({ id }) => ({
+        url: `/api/v1/users/${id}/kyc`,
+        method: 'GET',
+      }),
+      providesTags: (_result, _error, arg) => [
+        { type: 'AUTH', id: `KYC-${arg.id}` },
+      ],
+    }),
+    approveKyc: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({
+        url: `/api/v1/users/${id}/kyc/approve`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'AUTH', id: arg.id },
+        { type: 'AUTH', id: `KYC-${arg.id}` },
+        { type: 'AUTH', id: 'USERS_LIST' },
+      ],
+    }),
+    rejectKyc: builder.mutation<any, { id: string; reason: string }>({
+      query: ({ id, reason }) => ({
+        url: `/api/v1/users/${id}/kyc/reject`,
+        method: 'POST',
+        body: { reason },
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'AUTH', id: arg.id },
+        { type: 'AUTH', id: `KYC-${arg.id}` },
+        { type: 'AUTH', id: 'USERS_LIST' },
+      ],
+    }),
+    toggleUserStatus: builder.mutation<any, { id: string; isActive: boolean }>({
+      query: ({ id, isActive }) => ({
+        url: `/api/v1/users/${id}`,
+        method: 'PUT',
+        body: { isActive },
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'AUTH', id: arg.id },
+        { type: 'AUTH', id: 'USERS_LIST' },
+      ],
+    }),
+  }),
+});
 
 // Export types
 export type {
@@ -711,3 +796,12 @@ export type {
 
 // Export the actual LoginResponse type
 export type { LoginResponse } from '@/pages/admin/auth-slice';
+
+// Export user mutation aliases for convenience
+export const useCreateUserMutation = userApi.useCreateUserMutation;
+export const useUpdateUserMutation = userApi.useUpdateUserMutation;
+export const useDeleteUserMutation = userApi.useDeleteUserMutation;
+export const useGetUserKycQuery = userApi.useGetUserKycQuery;
+export const useApproveKycMutation = userApi.useApproveKycMutation;
+export const useRejectKycMutation = userApi.useRejectKycMutation;
+export const useToggleUserStatusMutation = userApi.useToggleUserStatusMutation;

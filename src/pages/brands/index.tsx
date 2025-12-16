@@ -14,6 +14,13 @@ import {
 } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import {
   Table,
   TableBody,
   TableCell,
@@ -32,6 +39,7 @@ import {
   ExternalLink,
   Edit,
   Trash2,
+  MoreHorizontal,
 } from 'lucide-react';
 
 const statusOptions = [
@@ -215,22 +223,43 @@ export function Brands() {
                       ? new Date(brand.updatedAt).toLocaleDateString()
                       : '—'}
                   </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openEditDialog(brand)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setDeleteBrandId(brand.id)}
-                      disabled={isDeleting}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditDialog(brand)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Brand
+                        </DropdownMenuItem>
+                        {brand.websiteUrl && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() =>
+                                window.open(brand.websiteUrl, '_blank')
+                              }
+                            >
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              Visit Website
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setDeleteBrandId(brand.id)}
+                          className="text-red-600"
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Brand
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))
@@ -359,7 +388,6 @@ function BrandForm({ defaultValues, onSubmit, isLoading }: BrandFormProps) {
             placeholder="Describe the brand"
             icon={FileText}
             textarea
-            rows={3}
           />
           <ControlledFormField
             name="logoUrl"

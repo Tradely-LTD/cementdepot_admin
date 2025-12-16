@@ -16,6 +16,7 @@ import type { RootState } from '@/store/store';
 import { DeliveryRoutes } from '@/pages/delivery-routes';
 import { Profile } from '@/pages/profile';
 import { Brands } from '@/pages/brands';
+import { Users } from '@/pages/users';
 // import { Pricing } from '@/pages/pricing';
 import { useEffect } from 'react';
 import { logout } from '@/pages/admin/auth-slice';
@@ -105,6 +106,14 @@ function App() {
                       element={
                         <AdminRoute>
                           <Brands />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/users"
+                      element={
+                        <AdminRoute>
+                          <Users />
                         </AdminRoute>
                       }
                     />

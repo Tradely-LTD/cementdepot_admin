@@ -46,17 +46,24 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: () => ({ url: `/api/v1/auth/me` }),
     }),
-    putApiV1AuthProfile: build.mutation<
-      PutApiV1AuthProfileApiResponse,
-      PutApiV1AuthProfileApiArg
+    postApiV1AuthGoogle: build.mutation<
+      PostApiV1AuthGoogleApiResponse,
+      PostApiV1AuthGoogleApiArg
     >({
-      query: () => ({ url: `/api/v1/auth/profile`, method: 'PUT' }),
+      query: () => ({ url: `/api/v1/auth/google`, method: 'POST' }),
     }),
-    putApiV1AuthPassword: build.mutation<
-      PutApiV1AuthPasswordApiResponse,
-      PutApiV1AuthPasswordApiArg
+    postApiV1AuthKyc: build.mutation<
+      PostApiV1AuthKycApiResponse,
+      PostApiV1AuthKycApiArg
     >({
-      query: () => ({ url: `/api/v1/auth/password`, method: 'PUT' }),
+      query: queryArg => ({
+        url: `/api/v1/auth/kyc`,
+        method: 'POST',
+        body: queryArg.body,
+      }),
+    }),
+    getApiV1Home: build.query<GetApiV1HomeApiResponse, GetApiV1HomeApiArg>({
+      query: () => ({ url: `/api/v1/home` }),
     }),
     getApiV1Products: build.query<
       GetApiV1ProductsApiResponse,
@@ -83,6 +90,12 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.productCreate,
       }),
     }),
+    getApiV1ProductsSearch: build.query<
+      GetApiV1ProductsSearchApiResponse,
+      GetApiV1ProductsSearchApiArg
+    >({
+      query: () => ({ url: `/api/v1/products/search` }),
+    }),
     getApiV1ProductsBrands: build.query<
       GetApiV1ProductsBrandsApiResponse,
       GetApiV1ProductsBrandsApiArg
@@ -94,11 +107,29 @@ const injectedRtkApi = api.injectEndpoints({
         },
       }),
     }),
+    getApiV1ProductsDeals: build.query<
+      GetApiV1ProductsDealsApiResponse,
+      GetApiV1ProductsDealsApiArg
+    >({
+      query: () => ({ url: `/api/v1/products/deals` }),
+    }),
+    getApiV1ProductsRecommendations: build.query<
+      GetApiV1ProductsRecommendationsApiResponse,
+      GetApiV1ProductsRecommendationsApiArg
+    >({
+      query: () => ({ url: `/api/v1/products/recommendations` }),
+    }),
     getApiV1ProductsCategories: build.query<
       GetApiV1ProductsCategoriesApiResponse,
       GetApiV1ProductsCategoriesApiArg
     >({
       query: () => ({ url: `/api/v1/products/categories` }),
+    }),
+    getApiV1ProductsStats: build.query<
+      GetApiV1ProductsStatsApiResponse,
+      GetApiV1ProductsStatsApiArg
+    >({
+      query: () => ({ url: `/api/v1/products/stats` }),
     }),
     getApiV1ProductsMy: build.query<
       GetApiV1ProductsMyApiResponse,
@@ -117,12 +148,6 @@ const injectedRtkApi = api.injectEndpoints({
           search: queryArg.search,
         },
       }),
-    }),
-    getApiV1ProductsStats: build.query<
-      GetApiV1ProductsStatsApiResponse,
-      GetApiV1ProductsStatsApiArg
-    >({
-      query: () => ({ url: `/api/v1/products/stats` }),
     }),
     getApiV1ProductsById: build.query<
       GetApiV1ProductsByIdApiResponse,
@@ -247,6 +272,12 @@ const injectedRtkApi = api.injectEndpoints({
           limit: queryArg.limit,
         },
       }),
+    }),
+    getApiV1DepotsReverseGeocode: build.query<
+      GetApiV1DepotsReverseGeocodeApiResponse,
+      GetApiV1DepotsReverseGeocodeApiArg
+    >({
+      query: () => ({ url: `/api/v1/depots/reverse-geocode` }),
     }),
     getApiV1DepotsStats: build.query<
       GetApiV1DepotsStatsApiResponse,
@@ -665,6 +696,20 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.body,
       }),
     }),
+    getApiV1PaymentsByReferenceByRef: build.query<
+      GetApiV1PaymentsByReferenceByRefApiResponse,
+      GetApiV1PaymentsByReferenceByRefApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/payments/by-reference/${queryArg.ref}`,
+      }),
+    }),
+    getApiV1PaymentsMyPayments: build.query<
+      GetApiV1PaymentsMyPaymentsApiResponse,
+      GetApiV1PaymentsMyPaymentsApiArg
+    >({
+      query: () => ({ url: `/api/v1/payments/my-payments` }),
+    }),
     getApiV1PaymentsById: build.query<
       GetApiV1PaymentsByIdApiResponse,
       GetApiV1PaymentsByIdApiArg
@@ -822,6 +867,106 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: () => ({ url: `/api/v1/notifications/read-all`, method: 'PATCH' }),
     }),
+    postApiV1UploadImage: build.mutation<
+      PostApiV1UploadImageApiResponse,
+      PostApiV1UploadImageApiArg
+    >({
+      query: () => ({ url: `/api/v1/upload/image`, method: 'POST' }),
+    }),
+    deleteApiV1UploadImage: build.mutation<
+      DeleteApiV1UploadImageApiResponse,
+      DeleteApiV1UploadImageApiArg
+    >({
+      query: () => ({ url: `/api/v1/upload/image`, method: 'DELETE' }),
+    }),
+    postApiV1UploadImages: build.mutation<
+      PostApiV1UploadImagesApiResponse,
+      PostApiV1UploadImagesApiArg
+    >({
+      query: () => ({ url: `/api/v1/upload/images`, method: 'POST' }),
+    }),
+    getApiV1PromotionsBanners: build.query<
+      GetApiV1PromotionsBannersApiResponse,
+      GetApiV1PromotionsBannersApiArg
+    >({
+      query: () => ({ url: `/api/v1/promotions/banners` }),
+    }),
+    getApiV1AnalyticsProducts: build.query<
+      GetApiV1AnalyticsProductsApiResponse,
+      GetApiV1AnalyticsProductsApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/analytics/products`,
+        params: {
+          depotId: queryArg.depotId,
+          startDate: queryArg.startDate,
+          endDate: queryArg.endDate,
+          period: queryArg.period,
+        },
+      }),
+    }),
+    getApiV1AnalyticsBestSelling: build.query<
+      GetApiV1AnalyticsBestSellingApiResponse,
+      GetApiV1AnalyticsBestSellingApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/analytics/best-selling`,
+        params: {
+          depotId: queryArg.depotId,
+          startDate: queryArg.startDate,
+          endDate: queryArg.endDate,
+          limit: queryArg.limit,
+        },
+      }),
+    }),
+    getApiV1AnalyticsSales: build.query<
+      GetApiV1AnalyticsSalesApiResponse,
+      GetApiV1AnalyticsSalesApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/analytics/sales`,
+        params: {
+          depotId: queryArg.depotId,
+          startDate: queryArg.startDate,
+          endDate: queryArg.endDate,
+          period: queryArg.period,
+        },
+      }),
+    }),
+    getApiV1AnalyticsAov: build.query<
+      GetApiV1AnalyticsAovApiResponse,
+      GetApiV1AnalyticsAovApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/analytics/aov`,
+        params: {
+          depotId: queryArg.depotId,
+          range: queryArg.range,
+        },
+      }),
+    }),
+    getApiV1SellersPaymentSettings: build.query<
+      GetApiV1SellersPaymentSettingsApiResponse,
+      GetApiV1SellersPaymentSettingsApiArg
+    >({
+      query: () => ({ url: `/api/v1/sellers/payment-settings` }),
+    }),
+    postApiV1SellersPaymentSettings: build.mutation<
+      PostApiV1SellersPaymentSettingsApiResponse,
+      PostApiV1SellersPaymentSettingsApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/sellers/payment-settings`,
+        method: 'POST',
+        body: queryArg.bankAccountInput,
+      }),
+    }),
+    getApiV1SellersRevenue: build.query<
+      GetApiV1SellersRevenueApiResponse,
+      GetApiV1SellersRevenueApiArg
+    >({
+      query: () => ({ url: `/api/v1/sellers/revenue` }),
+    }),
     getApiV1Users: build.query<GetApiV1UsersApiResponse, GetApiV1UsersApiArg>({
       query: queryArg => ({
         url: `/api/v1/users`,
@@ -862,14 +1007,6 @@ const injectedRtkApi = api.injectEndpoints({
           page: queryArg.page,
           limit: queryArg.limit,
         },
-      }),
-    }),
-    getApiV1PaymentsVerifyByReference: build.query<
-      GetApiV1PaymentsVerifyByReferenceApiResponse,
-      GetApiV1PaymentsVerifyByReferenceApiArg
-    >({
-      query: queryArg => ({
-        url: `/api/v1/payments/verify/${queryArg.reference}`,
       }),
     }),
     getApiV1Payments: build.query<
@@ -951,10 +1088,24 @@ export type GetApiV1AuthMeApiResponse =
     data?: User;
   };
 export type GetApiV1AuthMeApiArg = void;
-export type PutApiV1AuthProfileApiResponse = unknown;
-export type PutApiV1AuthProfileApiArg = void;
-export type PutApiV1AuthPasswordApiResponse = unknown;
-export type PutApiV1AuthPasswordApiArg = void;
+export type PostApiV1AuthGoogleApiResponse = unknown;
+export type PostApiV1AuthGoogleApiArg = void;
+export type PostApiV1AuthKycApiResponse =
+  /** status 200 KYC documents uploaded successfully */ Success & {
+    data?: User;
+  };
+export type PostApiV1AuthKycApiArg = {
+  body: {
+    /** Government-issued ID document (Driver's License, National ID, or Passport) */
+    idDocument: Blob;
+    /** Selfie photo holding the ID document */
+    selfiePhoto: Blob;
+    /** Business registration certificate or CAC document (optional, for sellers) */
+    businessDocument?: Blob;
+  };
+};
+export type GetApiV1HomeApiResponse = unknown;
+export type GetApiV1HomeApiArg = void;
 export type GetApiV1ProductsApiResponse =
   /** status 200 Products retrieved successfully */ {
     success?: boolean;
@@ -977,6 +1128,8 @@ export type PostApiV1ProductsApiResponse =
 export type PostApiV1ProductsApiArg = {
   productCreate: ProductCreate;
 };
+export type GetApiV1ProductsSearchApiResponse = unknown;
+export type GetApiV1ProductsSearchApiArg = void;
 export type GetApiV1ProductsBrandsApiResponse =
   /** status 200 Brands retrieved successfully */ {
     success?: boolean;
@@ -987,6 +1140,10 @@ export type GetApiV1ProductsBrandsApiArg = {
   /** Filter by active products only (default: true) */
   isActive?: boolean;
 };
+export type GetApiV1ProductsDealsApiResponse = unknown;
+export type GetApiV1ProductsDealsApiArg = void;
+export type GetApiV1ProductsRecommendationsApiResponse = unknown;
+export type GetApiV1ProductsRecommendationsApiArg = void;
 export type GetApiV1ProductsCategoriesApiResponse =
   /** status 200 Categories retrieved successfully */ {
     success?: boolean;
@@ -994,6 +1151,23 @@ export type GetApiV1ProductsCategoriesApiResponse =
     data?: ('cement' | 'building_materials')[];
   };
 export type GetApiV1ProductsCategoriesApiArg = void;
+export type GetApiV1ProductsStatsApiResponse =
+  /** status 200 Product statistics retrieved successfully */ Success & {
+    data?: {
+      total?: number;
+      active?: number;
+      inactive?: number;
+      byBrand?: {
+        brand?: string;
+        count?: number;
+      }[];
+      byCategory?: {
+        category?: string;
+        count?: number;
+      }[];
+    };
+  };
+export type GetApiV1ProductsStatsApiArg = void;
 export type GetApiV1ProductsMyApiResponse =
   /** status 200 Products retrieved successfully */ {
     success?: boolean;
@@ -1019,23 +1193,6 @@ export type GetApiV1ProductsMyApiArg = {
   /** Search by product name */
   search?: string;
 };
-export type GetApiV1ProductsStatsApiResponse =
-  /** status 200 Product statistics retrieved successfully */ Success & {
-    data?: {
-      total?: number;
-      active?: number;
-      inactive?: number;
-      byBrand?: {
-        brand?: string;
-        count?: number;
-      }[];
-      byCategory?: {
-        category?: string;
-        count?: number;
-      }[];
-    };
-  };
-export type GetApiV1ProductsStatsApiArg = void;
 export type GetApiV1ProductsByIdApiResponse =
   /** status 200 Product retrieved successfully */ Success & {
     data?: Product;
@@ -1142,6 +1299,8 @@ export type GetApiV1DepotsFindNearestApiArg = {
   longitude: number;
   limit?: number;
 };
+export type GetApiV1DepotsReverseGeocodeApiResponse = unknown;
+export type GetApiV1DepotsReverseGeocodeApiArg = void;
 export type GetApiV1DepotsStatsApiResponse =
   /** status 200 Depot statistics retrieved successfully */ Success & {
     data?: {
@@ -1527,14 +1686,28 @@ export type PostApiV1OrdersApiResponse =
   };
 export type PostApiV1OrdersApiArg = {
   body: {
+    /** ID of the depot */
     depotId: string;
-    deliveryType: 'pickup' | 'delivery';
+    /** Type of delivery - 'delivery' for home delivery or 'self_pickup' for customer pickup */
+    deliveryType: 'delivery' | 'self_pickup';
+    /** Nigerian state for delivery (required for delivery type) */
+    deliveryState?: string;
+    /** Local Government Area (required for delivery type) */
+    deliveryLga?: string;
+    /** City for delivery (required for delivery type) */
+    deliveryCity?: string;
+    /** Full delivery address (required for delivery type) */
     deliveryAddress?: string;
+    /** Phone number for delivery contact (required for delivery type) */
+    deliveryPhone?: string;
+    /** Optional destination city for route lookup */
+    destinationCity?: string;
     items: {
       productId: string;
       quantity: number;
     }[];
-    notes?: string;
+    /** Optional notes from buyer */
+    buyerNotes?: string;
   };
 };
 export type GetApiV1OrdersMyOrdersApiResponse =
@@ -1695,6 +1868,18 @@ export type PostApiV1PaymentsVerifyApiArg = {
     reference: string;
   };
 };
+export type GetApiV1PaymentsByReferenceByRefApiResponse =
+  /** status 200 Payment verification result */ Success & {
+    data?: {
+      payment?: Payment;
+      verified?: boolean;
+    };
+  };
+export type GetApiV1PaymentsByReferenceByRefApiArg = {
+  ref: string;
+};
+export type GetApiV1PaymentsMyPaymentsApiResponse = unknown;
+export type GetApiV1PaymentsMyPaymentsApiArg = void;
 export type GetApiV1PaymentsByIdApiResponse =
   /** status 200 Payment retrieved successfully */ Success & {
     data?: Payment;
@@ -1944,6 +2129,143 @@ export type PatchApiV1NotificationsByIdReadApiArg = {
 export type PatchApiV1NotificationsReadAllApiResponse =
   /** status 200 All notifications marked as read */ Success;
 export type PatchApiV1NotificationsReadAllApiArg = void;
+export type PostApiV1UploadImageApiResponse = unknown;
+export type PostApiV1UploadImageApiArg = void;
+export type DeleteApiV1UploadImageApiResponse = unknown;
+export type DeleteApiV1UploadImageApiArg = void;
+export type PostApiV1UploadImagesApiResponse = unknown;
+export type PostApiV1UploadImagesApiArg = void;
+export type GetApiV1PromotionsBannersApiResponse = unknown;
+export type GetApiV1PromotionsBannersApiArg = void;
+export type GetApiV1AnalyticsProductsApiResponse =
+  /** status 200 Product analytics retrieved successfully */ {
+    success?: boolean;
+    message?: string;
+    data?: {
+      totalProducts?: number;
+      activeProducts?: number;
+      totalProductsChange?: number;
+      activeProductsChange?: number;
+      stockOverview?: {
+        inStock?: number;
+        lowStock?: number;
+        outOfStock?: number;
+      };
+    };
+  };
+export type GetApiV1AnalyticsProductsApiArg = {
+  /** Filter by specific depot ID */
+  depotId?: string;
+  /** Start date for analytics period */
+  startDate?: string;
+  /** End date for analytics period */
+  endDate?: string;
+  /** Aggregation period */
+  period?: 'day' | 'week' | 'month' | 'quarter' | 'year';
+};
+export type GetApiV1AnalyticsBestSellingApiResponse =
+  /** status 200 Best-selling products retrieved successfully */ {
+    success?: boolean;
+    message?: string;
+    data?: {
+      products?: {
+        id?: string;
+        name?: string;
+        sku?: string;
+        imageUrl?: string | null;
+        brand?: string;
+        unitsSold?: number;
+        revenue?: number;
+      }[];
+    };
+  };
+export type GetApiV1AnalyticsBestSellingApiArg = {
+  /** Filter by specific depot ID */
+  depotId?: string;
+  /** Start date for analytics period */
+  startDate?: string;
+  /** End date for analytics period */
+  endDate?: string;
+  /** Number of products to return */
+  limit?: number;
+};
+export type GetApiV1AnalyticsSalesApiResponse =
+  /** status 200 Sales analytics retrieved successfully */ {
+    success?: boolean;
+    message?: string;
+    data?: {
+      totalOrders?: number;
+      deliveredOrders?: number;
+      totalOrdersChange?: number;
+      deliveredOrdersChange?: number;
+      salesOverview?: {
+        date?: string;
+        amount?: number;
+      }[];
+      latestSales?: {
+        date?: string;
+        amount?: number;
+        change?: number;
+      } | null;
+    };
+  };
+export type GetApiV1AnalyticsSalesApiArg = {
+  /** Filter by specific depot ID */
+  depotId?: string;
+  /** Start date for analytics period */
+  startDate?: string;
+  /** End date for analytics period */
+  endDate?: string;
+  /** Aggregation period for sales overview */
+  period?: 'day' | 'week' | 'month' | 'quarter' | 'year';
+};
+export type GetApiV1AnalyticsAovApiResponse =
+  /** status 200 AOV analytics retrieved successfully */ {
+    success?: boolean;
+    message?: string;
+    data?: {
+      currentValue?: number;
+      change?: number;
+      trend?: {
+        date?: string;
+        value?: number;
+      }[];
+    };
+  };
+export type GetApiV1AnalyticsAovApiArg = {
+  /** Filter by specific depot ID */
+  depotId?: string;
+  /** Time range for AOV calculation */
+  range?: '1H' | '1D' | '14D' | '1M' | '3M' | '1Y';
+};
+export type GetApiV1SellersPaymentSettingsApiResponse =
+  /** status 200 Bank account details retrieved successfully */ Success & {
+    data?: {
+      accountHolderName?: string;
+      bankName?: string;
+      /** Masked account number showing only last 4 digits */
+      accountNumber?: string;
+      accountType?: 'savings' | 'current' | 'other';
+    } | null;
+  };
+export type GetApiV1SellersPaymentSettingsApiArg = void;
+export type PostApiV1SellersPaymentSettingsApiResponse =
+  /** status 200 Bank account details saved successfully */ Success & {
+    data?: null;
+  };
+export type PostApiV1SellersPaymentSettingsApiArg = {
+  bankAccountInput: BankAccountInput;
+};
+export type GetApiV1SellersRevenueApiResponse =
+  /** status 200 Revenue retrieved successfully */ Success & {
+    data?: {
+      /** Total revenue in Naira */
+      totalRevenue?: number;
+      /** Currency code */
+      currency?: string;
+    };
+  };
+export type GetApiV1SellersRevenueApiArg = void;
 export type GetApiV1UsersApiResponse =
   /** status 200 Users retrieved successfully */ Success & {
     data?: User[];
@@ -2001,16 +2323,6 @@ export type GetApiV1OrdersDepotByDepotIdApiArg = {
   depotId: string;
   page?: number;
   limit?: number;
-};
-export type GetApiV1PaymentsVerifyByReferenceApiResponse =
-  /** status 200 Payment verification result */ Success & {
-    data?: {
-      payment?: Payment;
-      verified?: boolean;
-    };
-  };
-export type GetApiV1PaymentsVerifyByReferenceApiArg = {
-  reference: string;
 };
 export type GetApiV1PaymentsApiResponse =
   /** status 200 Payments retrieved successfully */ Success & {
@@ -2284,6 +2596,16 @@ export type Notification = {
   isRead?: boolean;
   createdAt?: string;
 };
+export type BankAccountInput = {
+  /** Full name of the account holder */
+  accountHolderName: string;
+  /** Name of the bank */
+  bankName: string;
+  /** 10-digit bank account number */
+  accountNumber: string;
+  /** Type of bank account (optional) */
+  accountType?: 'savings' | 'current' | 'other';
+};
 export const {
   useGetHealthQuery,
   usePostApiV1AuthRegisterMutation,
@@ -2291,14 +2613,18 @@ export const {
   usePostApiV1AuthRefreshMutation,
   usePostApiV1AuthLogoutMutation,
   useGetApiV1AuthMeQuery,
-  usePutApiV1AuthProfileMutation,
-  usePutApiV1AuthPasswordMutation,
+  usePostApiV1AuthGoogleMutation,
+  usePostApiV1AuthKycMutation,
+  useGetApiV1HomeQuery,
   useGetApiV1ProductsQuery,
   usePostApiV1ProductsMutation,
+  useGetApiV1ProductsSearchQuery,
   useGetApiV1ProductsBrandsQuery,
+  useGetApiV1ProductsDealsQuery,
+  useGetApiV1ProductsRecommendationsQuery,
   useGetApiV1ProductsCategoriesQuery,
-  useGetApiV1ProductsMyQuery,
   useGetApiV1ProductsStatsQuery,
+  useGetApiV1ProductsMyQuery,
   useGetApiV1ProductsByIdQuery,
   usePutApiV1ProductsByIdMutation,
   useDeleteApiV1ProductsByIdMutation,
@@ -2312,6 +2638,7 @@ export const {
   usePutApiV1BrandsByIdMutation,
   useDeleteApiV1BrandsByIdMutation,
   useGetApiV1DepotsFindNearestQuery,
+  useGetApiV1DepotsReverseGeocodeQuery,
   useGetApiV1DepotsStatsQuery,
   useGetApiV1DepotsQuery,
   usePostApiV1DepotsMutation,
@@ -2355,6 +2682,8 @@ export const {
   useGetApiV1OrdersByIdHistoryQuery,
   usePostApiV1PaymentsInitiateMutation,
   usePostApiV1PaymentsVerifyMutation,
+  useGetApiV1PaymentsByReferenceByRefQuery,
+  useGetApiV1PaymentsMyPaymentsQuery,
   useGetApiV1PaymentsByIdQuery,
   useGetApiV1PaymentsOrderByOrderIdQuery,
   usePostApiV1PaymentsByIdRefundMutation,
@@ -2370,10 +2699,20 @@ export const {
   useGetApiV1NotificationsUnreadCountQuery,
   usePatchApiV1NotificationsByIdReadMutation,
   usePatchApiV1NotificationsReadAllMutation,
+  usePostApiV1UploadImageMutation,
+  useDeleteApiV1UploadImageMutation,
+  usePostApiV1UploadImagesMutation,
+  useGetApiV1PromotionsBannersQuery,
+  useGetApiV1AnalyticsProductsQuery,
+  useGetApiV1AnalyticsBestSellingQuery,
+  useGetApiV1AnalyticsSalesQuery,
+  useGetApiV1AnalyticsAovQuery,
+  useGetApiV1SellersPaymentSettingsQuery,
+  usePostApiV1SellersPaymentSettingsMutation,
+  useGetApiV1SellersRevenueQuery,
   useGetApiV1UsersQuery,
   useGetApiV1UsersByIdQuery,
   useGetApiV1OrdersBuyerByBuyerIdQuery,
   useGetApiV1OrdersDepotByDepotIdQuery,
-  useGetApiV1PaymentsVerifyByReferenceQuery,
   useGetApiV1PaymentsQuery,
 } = injectedRtkApi;

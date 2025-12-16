@@ -25,36 +25,11 @@ import {
 } from 'lucide-react';
 import Select from 'react-select';
 import ReactPaginate from 'react-paginate';
-
-const ORDER_STATUSES = [
-  { value: 'all', label: 'All Orders' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'processing', label: 'Processing' },
-  { value: 'ready', label: 'Ready' },
-  { value: 'in_transit', label: 'In Transit' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'cancelled', label: 'Cancelled' },
-];
-
-const getStatusColor = (status: string) => {
-  const colors: Record<string, string> = {
-    pending:
-      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    confirmed:
-      'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-    processing:
-      'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
-    ready:
-      'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
-    in_transit:
-      'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-    delivered:
-      'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-  };
-  return colors[status] || 'bg-gray-100 text-gray-800';
-};
+import {
+  ORDER_STATUS_OPTIONS,
+  getOrderStatusColor,
+  formatOrderStatus,
+} from '@/utils/constants';
 
 export function Orders() {
   const {
@@ -166,14 +141,14 @@ export function Orders() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Processing
+                  Payment Pending
                 </p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {stats.processing || 0}
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {(stats as any).payment_pending || stats.processing || 0}
                 </p>
               </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
-                <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
+                <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
           </Card>
@@ -198,23 +173,7 @@ export function Orders() {
 
       {/* Additional Stats Row */}
       {!isLoadingStats && stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Delivered
-                </p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {stats.delivered || 0}
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </Card>
-
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -227,6 +186,40 @@ export function Orders() {
               </div>
               <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
                 <Package className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Out for Delivery
+                </p>
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                  {(stats as any)?.out_for_delivery ||
+                    (stats as any)?.in_transit ||
+                    0}
+                </p>
+              </div>
+              <div className="p-3 bg-amber-100 dark:bg-amber-900 rounded-full">
+                <TrendingUp className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Delivered
+                </p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {stats.delivered || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </Card>
@@ -256,13 +249,13 @@ export function Orders() {
             <label className="block text-sm font-medium mb-2">Status</label>
             <Select<{ value: string; label: string }>
               value={
-                ORDER_STATUSES.find(s => s.value === (status || 'all')) ||
-                ORDER_STATUSES[0]
+                ORDER_STATUS_OPTIONS.find(s => s.value === (status || 'all')) ||
+                ORDER_STATUS_OPTIONS[0]
               }
               onChange={(option: { value: string; label: string } | null) =>
                 setStatus(option?.value === 'all' ? undefined : option?.value)
               }
-              options={ORDER_STATUSES}
+              options={ORDER_STATUS_OPTIONS}
               className="react-select-container"
               classNamePrefix="react-select"
               styles={{
@@ -372,82 +365,80 @@ export function Orders() {
         <div className="space-y-4">
           {orders && (orders as any).data?.length > 0 ? (
             (orders as any).data.map((order: any) => (
-              <Card key={order.id} className="p-6">
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
-                  <div className="flex-1 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center space-x-3">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Order #{order.orderNumber}
-                          </h3>
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}
-                          >
-                            {order.status.replace('_', ' ').toUpperCase()}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          <Calendar className="inline h-4 w-4 mr-1" />
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
+              <Card
+                key={order.id}
+                className="hover:shadow-md transition-shadow"
+              >
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        #{order.orderNumber}
+                      </h3>
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${getOrderStatusColor(order.status)}`}
+                      >
+                        {formatOrderStatus(order.status)}
+                      </span>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {order.buyer?.fullName || 'Customer'}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {order.depot?.name || 'Depot'}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Package className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {order.deliveryType}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">
                         ₦{order.totalAmount?.toLocaleString()}
                       </p>
-                      {order.items && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {order.items.length} item(s)
-                        </p>
-                      )}
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
 
-                  <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                        {order.buyer?.fullName || 'Customer'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                        {order.depot?.name || 'Depot'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {order.items?.length || 0} items • {order.deliveryType}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => openStatusDialog(order)}
                       disabled={
                         order.status === 'delivered' ||
-                        order.status === 'cancelled'
+                        order.status === 'collected' ||
+                        order.status === 'cancelled' ||
+                        order.status === 'failed'
                       }
+                      className="flex-1"
                     >
                       Update Status
                     </Button>
                     {order.status !== 'delivered' &&
-                      order.status !== 'cancelled' && (
+                      order.status !== 'collected' &&
+                      order.status !== 'cancelled' &&
+                      order.status !== 'failed' && (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleCancel(order)}
                           disabled={isCancelling}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                         >
-                          Cancel Order
+                          Cancel
                         </Button>
                       )}
                   </div>
@@ -478,13 +469,13 @@ export function Orders() {
               </label>
               <Select<{ value: string; label: string }>
                 value={
-                  ORDER_STATUSES.find(s => s.value === newStatus) ||
-                  ORDER_STATUSES[1]
+                  ORDER_STATUS_OPTIONS.find(s => s.value === newStatus) ||
+                  ORDER_STATUS_OPTIONS[1]
                 }
                 onChange={(option: { value: string; label: string } | null) =>
                   setNewStatus(option?.value || '')
                 }
-                options={ORDER_STATUSES.filter(s => s.value !== 'all')}
+                options={ORDER_STATUS_OPTIONS.filter(s => s.value !== 'all')}
                 className="react-select-container"
                 classNamePrefix="react-select"
                 styles={{
