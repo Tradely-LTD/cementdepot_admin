@@ -360,7 +360,7 @@ interface BrandFormProps {
 }
 
 function BrandForm({ defaultValues, onSubmit, isLoading }: BrandFormProps) {
-  const [uploadsFile] = useUploadsFileMutation();
+  const [uploadsFile, uploadState] = useUploadsFileMutation();
 
   return (
     <Form
@@ -398,6 +398,7 @@ function BrandForm({ defaultValues, onSubmit, isLoading }: BrandFormProps) {
               watch={watch}
               setValue={setValue}
               uploadsFile={uploadsFile}
+              uploadState={uploadState}
               existingData={defaultValues}
               fieldName="logoUrl"
               isMultiple={false}

@@ -782,7 +782,7 @@ function ProductForm({
   currentUserId,
 }: ProductFormProps) {
   const schema = createProductSchema(isAdmin);
-  const [uploadsFile] = useUploadsFileMutation();
+  const [uploadsFile, uploadState] = useUploadsFileMutation();
   console.log('editingProduct', editingProduct);
   const categoryOptions = categories.map((cat: string) => ({
     value: cat,
@@ -957,6 +957,7 @@ function ProductForm({
             watch={watch}
             setValue={setValue}
             uploadsFile={uploadsFile}
+            uploadState={uploadState}
             existingData={editingProduct}
             fieldName="imageUrl"
             isMultiple={false}
