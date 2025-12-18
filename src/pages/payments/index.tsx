@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Select from 'react-select';
 import ReactPaginate from 'react-paginate';
+import { OrderListSkeleton } from '@/loader';
 
 const PAYMENT_STATUSES = [
   { value: 'all', label: 'All Payments' },
@@ -177,11 +178,7 @@ export function Payments() {
 
       {/* Payments List */}
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-600 dark:text-gray-400">
-            Loading payments...
-          </p>
-        </div>
+        <OrderListSkeleton count={5} />
       ) : (
         <div className="space-y-4">
           {payments.length > 0 ? (

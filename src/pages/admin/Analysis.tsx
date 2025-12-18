@@ -24,6 +24,7 @@ import {
   useGetApiV1ReportsPerformanceQuery,
 } from '@/store/coreApiWithTags';
 import { toast } from 'sonner';
+import { StatsCardSkeleton, ReportCardSkeleton } from '@/loader';
 
 export function Analysis() {
   const [dateRange, setDateRange] = useState({
@@ -130,9 +131,21 @@ export function Analysis() {
       </div>
 
       {isLoading ? (
-        <Card className="p-12 text-center">
-          <p className="text-muted-foreground">Loading reports...</p>
-        </Card>
+        <div className="space-y-6">
+          {/* Key Metrics Skeleton */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <StatsCardSkeleton key={index} />
+            ))}
+          </div>
+
+          {/* Report Cards Skeleton */}
+          <div className="space-y-6">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <ReportCardSkeleton key={index} />
+            ))}
+          </div>
+        </div>
       ) : (
         <>
           {/* Key Metrics */}

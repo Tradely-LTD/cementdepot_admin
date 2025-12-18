@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   ArrowRight,
 } from 'lucide-react';
+import { DashboardStatsSkeleton } from '@/loader';
 
 export function Dashboard() {
   const { dashboardData, isLoadingDashboard, dateRange, setDateRange } =
@@ -66,11 +67,7 @@ export function Dashboard() {
 
       {/* Stats Grid */}
       {isLoadingDashboard ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-600 dark:text-gray-400">
-            Loading dashboard...
-          </p>
-        </div>
+        <DashboardStatsSkeleton />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

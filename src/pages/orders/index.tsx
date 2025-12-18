@@ -30,6 +30,7 @@ import {
   getOrderStatusColor,
   formatOrderStatus,
 } from '@/utils/constants';
+import { StatsCardSkeleton, OrderListSkeleton } from '@/loader';
 
 export function Orders() {
   const {
@@ -103,144 +104,157 @@ export function Orders() {
       </div>
 
       {/* Order Stats */}
-      {!isLoadingStats && stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Orders
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats.total || 0}
-                </p>
+      {isLoadingStats ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <StatsCardSkeleton key={index} />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <StatsCardSkeleton key={index} />
+            ))}
+          </div>
+        </>
+      ) : stats ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Orders
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {stats.total || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <ShoppingCart className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <ShoppingCart className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Pending Orders
-                </p>
-                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {stats.pending || 0}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Pending Orders
+                  </p>
+                  <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                    {stats.pending || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
+                  <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
               </div>
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
-                <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Payment Pending
-                </p>
-                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                  {(stats as any).payment_pending || stats.processing || 0}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Payment Pending
+                  </p>
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    {(stats as any).payment_pending || stats.processing || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
+                  <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                </div>
               </div>
-              <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
-                <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Revenue
-                </p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  ₦{stats.totalRevenue?.toLocaleString() || '0'}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Revenue
+                  </p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    ₦{stats.totalRevenue?.toLocaleString() || '0'}
+                  </p>
+                </div>
+                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                  <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
               </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
+            </Card>
+          </div>
 
-      {/* Additional Stats Row */}
-      {!isLoadingStats && stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Confirmed
-                </p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {stats.confirmed || 0}
-                </p>
+          {/* Additional Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Confirmed
+                  </p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {stats.confirmed || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <Package className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <Package className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Out for Delivery
-                </p>
-                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                  {(stats as any)?.out_for_delivery ||
-                    (stats as any)?.in_transit ||
-                    0}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Out for Delivery
+                  </p>
+                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                    {(stats as any)?.out_for_delivery ||
+                      (stats as any)?.in_transit ||
+                      0}
+                  </p>
+                </div>
+                <div className="p-3 bg-amber-100 dark:bg-amber-900 rounded-full">
+                  <TrendingUp className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                </div>
               </div>
-              <div className="p-3 bg-amber-100 dark:bg-amber-900 rounded-full">
-                <TrendingUp className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Delivered
-                </p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {stats.delivered || 0}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Delivered
+                  </p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {stats.delivered || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                  <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
               </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Cancelled
-                </p>
-                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {stats.cancelled || 0}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Cancelled
+                  </p>
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                    {stats.cancelled || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-red-100 dark:bg-red-900 rounded-full">
+                  <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />
+                </div>
               </div>
-              <div className="p-3 bg-red-100 dark:bg-red-900 rounded-full">
-                <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
+            </Card>
+          </div>
+        </>
+      ) : null}
 
       {/* Filters */}
       <Card className="p-6">
@@ -358,9 +372,7 @@ export function Orders() {
 
       {/* Orders List */}
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-600 dark:text-gray-400">Loading orders...</p>
-        </div>
+        <OrderListSkeleton count={5} />
       ) : (
         <div className="space-y-4">
           {orders && (orders as any).data?.length > 0 ? (

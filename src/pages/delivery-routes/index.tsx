@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Route, TrendingUp, TrendingDown, MapPin } from 'lucide-react';
 import Select from 'react-select';
 import ReactPaginate from 'react-paginate';
+import { StatsCardSkeleton, RouteListSkeleton } from '@/loader';
 
 const initialFormState = {
   sourceDepotId: '',
@@ -257,7 +258,13 @@ export function DeliveryRoutes() {
       </div>
 
       {/* Route Stats */}
-      {!isLoadingStats && stats && (
+      {isLoadingStats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <StatsCardSkeleton key={index} />
+          ))}
+        </div>
+      ) : stats ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="flex items-center justify-between">
@@ -323,7 +330,7 @@ export function DeliveryRoutes() {
             </div>
           </Card>
         </div>
-      )}
+      ) : null}
 
       <Card className="p-6 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -488,9 +495,7 @@ export function DeliveryRoutes() {
       </Card>
 
       {isLoading ? (
-        <Card className="p-12 text-center text-gray-600 dark:text-gray-400">
-          Loading routes…
-        </Card>
+        <RouteListSkeleton count={4} />
       ) : routes.length === 0 ? (
         <Card className="p-12 text-center text-gray-600 dark:text-gray-400">
           No routes match the current filters.

@@ -52,6 +52,7 @@ import {
   MoreHorizontal,
   ExternalLink,
 } from 'lucide-react';
+import { TableRowSkeleton } from '@/loader';
 
 const roleOptions = [
   { value: undefined as undefined, label: 'All Roles' },
@@ -246,11 +247,11 @@ export function Users() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-10">
-                  Loading users...
-                </TableCell>
-              </TableRow>
+              <>
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <TableRowSkeleton key={index} columns={8} />
+                ))}
+              </>
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-10">

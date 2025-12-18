@@ -23,6 +23,7 @@ import {
   Lock,
 } from 'lucide-react';
 import Select from 'react-select';
+import { StatsCardSkeleton, InventoryGridSkeleton } from '@/loader';
 
 // Inventory adjustment reasons
 const INVENTORY_ADJUSTMENT_REASONS = [
@@ -163,110 +164,123 @@ export function Inventory() {
       </div>
 
       {/* Inventory Stats */}
-      {!isLoadingStats && stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Items
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats.totalItems || 0}
-                </p>
+      {isLoadingStats ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <StatsCardSkeleton key={index} />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Array.from({ length: 2 }).map((_, index) => (
+              <StatsCardSkeleton key={index} />
+            ))}
+          </div>
+        </>
+      ) : stats ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Items
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {stats.totalItems || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <Boxes className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <Boxes className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Quantity
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats.totalQuantity?.toLocaleString() || '0'}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Quantity
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {stats.totalQuantity?.toLocaleString() || '0'}
+                  </p>
+                </div>
+                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                  <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
               </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Available
-                </p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {stats.totalAvailable?.toLocaleString() || '0'}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Available
+                  </p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {stats.totalAvailable?.toLocaleString() || '0'}
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
+                  <Package className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
               </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full">
-                <Package className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Low Stock Items
-                </p>
-                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {stats.lowStockItems || 0}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Low Stock Items
+                  </p>
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                    {stats.lowStockItems || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-red-100 dark:bg-red-900 rounded-full">
+                  <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                </div>
               </div>
-              <div className="p-3 bg-red-100 dark:bg-red-900 rounded-full">
-                <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
+            </Card>
+          </div>
 
-      {/* Additional Stats Row */}
-      {!isLoadingStats && stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Reserved Quantity
-                </p>
-                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {stats.totalReserved?.toLocaleString() || '0'}
-                </p>
+          {/* Additional Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Reserved Quantity
+                  </p>
+                  <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                    {stats.totalReserved?.toLocaleString() || '0'}
+                  </p>
+                </div>
+                <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
+                  <Lock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
               </div>
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
-                <Lock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Depots
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats.byDepot?.length || 0}
-                </p>
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Depots
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {stats.byDepot?.length || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-full">
+                  <Boxes className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                </div>
               </div>
-              <div className="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-full">
-                <Boxes className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
+            </Card>
+          </div>
+        </>
+      ) : null}
 
       {/* Filters */}
       <Card className="p-6">
@@ -371,11 +385,7 @@ export function Inventory() {
             Depot Inventory
           </h3>
           {isLoadingInventory ? (
-            <div className="flex justify-center items-center h-64">
-              <p className="text-gray-600 dark:text-gray-400">
-                Loading inventory...
-              </p>
-            </div>
+            <InventoryGridSkeleton count={6} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {inventory && (inventory as any).data?.length > 0 ? (

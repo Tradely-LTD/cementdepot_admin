@@ -38,6 +38,7 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import type { ProductCreate, ProductUpdate } from '@/store/coreApiWithTags';
+import { ProductGridSkeleton, StatsCardSkeleton } from '@/loader';
 
 // Extended ProductCreate type to include initialStockQuantity
 type ExtendedProductCreate = ProductCreate & {
@@ -202,7 +203,13 @@ export function Products() {
       </div>
 
       {/* Product Stats */}
-      {!isLoadingStats && stats && (
+      {isLoadingStats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <StatsCardSkeleton key={index} />
+          ))}
+        </div>
+      ) : stats ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="flex items-center justify-between">
@@ -268,7 +275,7 @@ export function Products() {
             </div>
           </Card>
         </div>
-      )}
+      ) : null}
 
       {/* Filters */}
       <Card className="p-6">
@@ -548,49 +555,48 @@ export function Products() {
 
       {/* Products Grid */}
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-600 dark:text-gray-400">
-            Loading products...
-          </p>
-        </div>
+        <ProductGridSkeleton count={9} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products && (products as any).data?.length > 0 ? (
             (products as any).data.map((product: any) => (
-              <Card key={product.id} className="p-6 space-y-4">
-                <div className="flex items-start justify-between">
+              <Card key={product.id} className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
                         alt={product.name}
-                        className="w-12 h-12 rounded object-cover"
+                        className="w-10 h-10 rounded object-cover"
                       />
                     ) : (
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                        <Package className="h-6 w-6 text-gray-400" />
+                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                        <Package className="h-5 w-5 text-gray-400" />
                       </div>
                     )}
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
                         {product.name}
                       </h3>
                       {product.brand && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
                           {product.brand}
                         </p>
                       )}
                     </div>
                   </div>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      product.isActive
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}
+                  >
+                    {product.isActive ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
 
-                {product.description && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                    {product.description}
-                  </p>
-                )}
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
                   <div>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       ₦

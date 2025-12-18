@@ -23,16 +23,17 @@ export const useProducts = () => {
   const [filters, setFilters] = useState<ProductFilters>({});
 
   // Fetch products (role-based: seller sees their products, admin sees all)
-  const { data, isLoading, error, refetch } = useGetApiV1ProductsMyQuery({
-    page,
-    limit,
-    category: filters.category,
-    brandId: filters.brandId,
-    depotId: filters.depotId,
-    isActive:
-      filters.isActive !== undefined ? String(filters.isActive) : undefined,
-    search: filters.search,
-  });
+  const { data, isLoading, error, refetch, isFetching } =
+    useGetApiV1ProductsMyQuery({
+      page,
+      limit,
+      category: filters.category,
+      brandId: filters.brandId,
+      depotId: filters.depotId,
+      isActive:
+        filters.isActive !== undefined ? String(filters.isActive) : undefined,
+      search: filters.search,
+    });
 
   // Create product
   const [createProduct, { isLoading: isCreating }] =
@@ -100,7 +101,7 @@ export const useProducts = () => {
 
   return {
     products: data,
-    isLoading,
+    isLoading: isLoading || isFetching,
     error,
     page,
     setPage,

@@ -42,6 +42,7 @@ import {
   ControlledSelectField,
 } from '@/components/forms';
 import * as yup from 'yup';
+import { StatsCardSkeleton, DepotGridSkeleton } from '@/loader';
 
 // Nigerian states list
 const NIGERIAN_STATES = [
@@ -246,7 +247,13 @@ export function Depots() {
       </div>
 
       {/* Depot Stats */}
-      {!isLoadingStats && stats && (
+      {isLoadingStats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <StatsCardSkeleton key={index} />
+          ))}
+        </div>
+      ) : stats ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card className="p-4">
             <div className="flex items-center justify-between">
@@ -328,7 +335,7 @@ export function Depots() {
             </div>
           </Card>
         </div>
-      )}
+      ) : null}
 
       {/* Filters */}
       <Card className="p-6">
@@ -550,9 +557,7 @@ export function Depots() {
 
       {/* Depots Grid */}
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-600 dark:text-gray-400">Loading depots...</p>
-        </div>
+        <DepotGridSkeleton count={6} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {depots && (depots as any).data?.length > 0 ? (

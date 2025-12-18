@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import FileUploader from '@/components/file-uploader';
 import { useUploadsFileMutation } from '@/store/uploads';
+import { TableRowSkeleton } from '@/loader';
 
 const statusOptions = [
   { value: undefined, label: 'All Status' },
@@ -177,11 +178,11 @@ export function Brands() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">
-                  Loading brands...
-                </TableCell>
-              </TableRow>
+              <>
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <TableRowSkeleton key={index} columns={7} />
+                ))}
+              </>
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-10">
