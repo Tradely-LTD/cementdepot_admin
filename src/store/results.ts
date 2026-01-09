@@ -758,7 +758,13 @@ const injectedRtkApi = api.injectEndpoints({
       GetApiV1ReportsDashboardApiResponse,
       GetApiV1ReportsDashboardApiArg
     >({
-      query: () => ({ url: `/api/v1/reports/dashboard` }),
+      query: queryArg => ({
+        url: `/api/v1/reports/dashboard`,
+        params: {
+          startDate: queryArg.startDate,
+          endDate: queryArg.endDate,
+        },
+      }),
     }),
     getApiV1ReportsSales: build.query<
       GetApiV1ReportsSalesApiResponse,
@@ -885,6 +891,25 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: () => ({ url: `/api/v1/upload/images`, method: 'POST' }),
     }),
+    getApiV1LocationsSearch: build.query<
+      GetApiV1LocationsSearchApiResponse,
+      GetApiV1LocationsSearchApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/locations/search`,
+        params: {
+          query: queryArg.query,
+        },
+      }),
+    }),
+    getApiV1LocationsDetailsByPlaceId: build.query<
+      GetApiV1LocationsDetailsByPlaceIdApiResponse,
+      GetApiV1LocationsDetailsByPlaceIdApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/locations/details/${queryArg.placeId}`,
+      }),
+    }),
     getApiV1PromotionsBanners: build.query<
       GetApiV1PromotionsBannersApiResponse,
       GetApiV1PromotionsBannersApiArg
@@ -984,6 +1009,95 @@ const injectedRtkApi = api.injectEndpoints({
       GetApiV1UsersByIdApiArg
     >({
       query: queryArg => ({ url: `/api/v1/users/${queryArg.id}` }),
+    }),
+    putApiV1UsersById: build.mutation<
+      PutApiV1UsersByIdApiResponse,
+      PutApiV1UsersByIdApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/users/${queryArg.id}`,
+        method: 'PUT',
+        body: queryArg.body,
+      }),
+    }),
+    deleteApiV1UsersById: build.mutation<
+      DeleteApiV1UsersByIdApiResponse,
+      DeleteApiV1UsersByIdApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/users/${queryArg.id}`,
+        method: 'DELETE',
+      }),
+    }),
+    getApiV1UsersByIdKyc: build.query<
+      GetApiV1UsersByIdKycApiResponse,
+      GetApiV1UsersByIdKycApiArg
+    >({
+      query: queryArg => ({ url: `/api/v1/users/${queryArg.id}/kyc` }),
+    }),
+    postApiV1UsersByIdKycApprove: build.mutation<
+      PostApiV1UsersByIdKycApproveApiResponse,
+      PostApiV1UsersByIdKycApproveApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/users/${queryArg.id}/kyc/approve`,
+        method: 'POST',
+      }),
+    }),
+    postApiV1UsersByIdKycReject: build.mutation<
+      PostApiV1UsersByIdKycRejectApiResponse,
+      PostApiV1UsersByIdKycRejectApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/users/${queryArg.id}/kyc/reject`,
+        method: 'POST',
+        body: queryArg.body,
+      }),
+    }),
+    getApiV1Wishlist: build.query<
+      GetApiV1WishlistApiResponse,
+      GetApiV1WishlistApiArg
+    >({
+      query: () => ({ url: `/api/v1/wishlist` }),
+    }),
+    postApiV1Wishlist: build.mutation<
+      PostApiV1WishlistApiResponse,
+      PostApiV1WishlistApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/wishlist`,
+        method: 'POST',
+        body: queryArg.body,
+      }),
+    }),
+    deleteApiV1Wishlist: build.mutation<
+      DeleteApiV1WishlistApiResponse,
+      DeleteApiV1WishlistApiArg
+    >({
+      query: () => ({ url: `/api/v1/wishlist`, method: 'DELETE' }),
+    }),
+    getApiV1WishlistIds: build.query<
+      GetApiV1WishlistIdsApiResponse,
+      GetApiV1WishlistIdsApiArg
+    >({
+      query: () => ({ url: `/api/v1/wishlist/ids` }),
+    }),
+    getApiV1WishlistCheckByProductId: build.query<
+      GetApiV1WishlistCheckByProductIdApiResponse,
+      GetApiV1WishlistCheckByProductIdApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/wishlist/check/${queryArg.productId}`,
+      }),
+    }),
+    deleteApiV1WishlistByProductId: build.mutation<
+      DeleteApiV1WishlistByProductIdApiResponse,
+      DeleteApiV1WishlistByProductIdApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/v1/wishlist/${queryArg.productId}`,
+        method: 'DELETE',
+      }),
     }),
     getApiV1OrdersBuyerByBuyerId: build.query<
       GetApiV1OrdersBuyerByBuyerIdApiResponse,
@@ -1933,9 +2047,53 @@ export type GetApiV1ReportsDashboardApiResponse =
       totalDepots?: number;
       /** Number of active depots (filtered by seller if user is seller) */
       activeDepots?: number;
+      /** GIS coordinate status for depots */
+      gisStatus?: {
+        /** Number of depots with valid GIS coordinates (latitude and longitude) */
+        depotsWithGis?: number;
+        /** Number of depots without valid GIS coordinates */
+        depotsWithoutGis?: number;
+        /** Whether there are any depots with GIS data */
+        hasGisData?: boolean;
+      };
+      /** Chart data for dashboard visualizations */
+      charts?: {
+        /** Daily revenue trend data */
+        revenueTrend?: {
+          /** Day abbreviation (Mon, Tue, etc.) */
+          day?: string;
+          /** Date in YYYY-MM-DD format */
+          date?: string;
+          /** Revenue for the day */
+          revenue?: number;
+        }[];
+        /** Daily orders distribution data */
+        ordersDistribution?: {
+          /** Day abbreviation (Mon, Tue, etc.) */
+          day?: string;
+          /** Date in YYYY-MM-DD format */
+          date?: string;
+          /** Number of orders for the day */
+          orders?: number;
+        }[];
+        /** Top performing products data */
+        productPerformance?: {
+          /** Product name */
+          name?: string;
+          /** Total units sold */
+          sales?: number;
+          /** Total revenue from product */
+          revenue?: number;
+        }[];
+      };
     };
   };
-export type GetApiV1ReportsDashboardApiArg = void;
+export type GetApiV1ReportsDashboardApiArg = {
+  /** Optional start date for chart data (YYYY-MM-DD). Defaults to 7 days ago if not provided. */
+  startDate?: string;
+  /** Optional end date for chart data (YYYY-MM-DD). Defaults to today if not provided. */
+  endDate?: string;
+};
 export type GetApiV1ReportsSalesApiResponse =
   /** status 200 Sales report retrieved successfully (filtered by seller if user is seller) */ Success & {
     data?: {
@@ -2135,6 +2293,42 @@ export type DeleteApiV1UploadImageApiResponse = unknown;
 export type DeleteApiV1UploadImageApiArg = void;
 export type PostApiV1UploadImagesApiResponse = unknown;
 export type PostApiV1UploadImagesApiArg = void;
+export type GetApiV1LocationsSearchApiResponse =
+  /** status 200 Places search results */ {
+    success?: boolean;
+    data?: {
+      place_id?: string;
+      description?: string;
+      main_text?: string;
+      secondary_text?: string;
+    }[];
+  };
+export type GetApiV1LocationsSearchApiArg = {
+  /** Search query for places */
+  query: string;
+};
+export type GetApiV1LocationsDetailsByPlaceIdApiResponse =
+  /** status 200 Place details */ {
+    success?: boolean;
+    data?: {
+      geometry?: {
+        location?: {
+          lat?: number;
+          lng?: number;
+        };
+      };
+      formatted_address?: string;
+      address_components?: {
+        long_name?: string;
+        short_name?: string;
+        types?: string[];
+      }[];
+    };
+  };
+export type GetApiV1LocationsDetailsByPlaceIdApiArg = {
+  /** Google Places place ID */
+  placeId: string;
+};
 export type GetApiV1PromotionsBannersApiResponse = unknown;
 export type GetApiV1PromotionsBannersApiArg = void;
 export type GetApiV1AnalyticsProductsApiResponse =
@@ -2289,6 +2483,127 @@ export type GetApiV1UsersByIdApiResponse =
   };
 export type GetApiV1UsersByIdApiArg = {
   id: string;
+};
+export type PutApiV1UsersByIdApiResponse =
+  /** status 200 User updated successfully */ Success & {
+    data?: User;
+  };
+export type PutApiV1UsersByIdApiArg = {
+  id: string;
+  body: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    businessName?: string;
+    role?: 'admin' | 'seller' | 'buyer';
+    isActive?: boolean;
+  };
+};
+export type DeleteApiV1UsersByIdApiResponse =
+  /** status 200 User deleted successfully */ Success;
+export type DeleteApiV1UsersByIdApiArg = {
+  id: string;
+};
+export type GetApiV1UsersByIdKycApiResponse =
+  /** status 200 KYC details retrieved successfully */ Success & {
+    data?: {
+      id?: string;
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      role?: string;
+      kycStatus?: string;
+      kycDocumentUrl?: string | null;
+      kycRejectionReason?: string | null;
+      kycVerifiedAt?: string | null;
+      kycVerifiedBy?: string | null;
+      kycDocuments?: object | null;
+    };
+  };
+export type GetApiV1UsersByIdKycApiArg = {
+  /** User ID */
+  id: string;
+};
+export type PostApiV1UsersByIdKycApproveApiResponse =
+  /** status 200 KYC approved successfully */ Success & {
+    data?: User;
+  };
+export type PostApiV1UsersByIdKycApproveApiArg = {
+  /** User ID */
+  id: string;
+};
+export type PostApiV1UsersByIdKycRejectApiResponse =
+  /** status 200 KYC rejected successfully */ Success & {
+    data?: User;
+  };
+export type PostApiV1UsersByIdKycRejectApiArg = {
+  /** User ID */
+  id: string;
+  body: {
+    /** Reason for KYC rejection */
+    reason: string;
+  };
+};
+export type GetApiV1WishlistApiResponse =
+  /** status 200 Wishlist retrieved successfully */ {
+    success?: boolean;
+    data?: {
+      id?: string;
+      productId?: string;
+      product?: Product;
+      createdAt?: string;
+    }[];
+  };
+export type GetApiV1WishlistApiArg = void;
+export type PostApiV1WishlistApiResponse =
+  /** status 201 Product added to wishlist successfully */ {
+    success?: boolean;
+    message?: string;
+    data?: {
+      id?: string;
+      userId?: string;
+      productId?: string;
+      createdAt?: string;
+    };
+  };
+export type PostApiV1WishlistApiArg = {
+  body: {
+    /** ID of the product to add to wishlist */
+    productId: string;
+  };
+};
+export type DeleteApiV1WishlistApiResponse =
+  /** status 200 Wishlist cleared successfully */ {
+    success?: boolean;
+    message?: string;
+  };
+export type DeleteApiV1WishlistApiArg = void;
+export type GetApiV1WishlistIdsApiResponse =
+  /** status 200 Wishlist product IDs retrieved successfully */ {
+    success?: boolean;
+    data?: string[];
+  };
+export type GetApiV1WishlistIdsApiArg = void;
+export type GetApiV1WishlistCheckByProductIdApiResponse =
+  /** status 200 Check completed successfully */ {
+    success?: boolean;
+    data?: {
+      isInWishlist?: boolean;
+    };
+  };
+export type GetApiV1WishlistCheckByProductIdApiArg = {
+  /** Product ID to check */
+  productId: string;
+};
+export type DeleteApiV1WishlistByProductIdApiResponse =
+  /** status 200 Product removed from wishlist successfully */ {
+    success?: boolean;
+    message?: string;
+  };
+export type DeleteApiV1WishlistByProductIdApiArg = {
+  /** Product ID to remove from wishlist */
+  productId: string;
 };
 export type GetApiV1OrdersBuyerByBuyerIdApiResponse =
   /** status 200 Buyer orders retrieved successfully */ Success & {
@@ -2702,6 +3017,8 @@ export const {
   usePostApiV1UploadImageMutation,
   useDeleteApiV1UploadImageMutation,
   usePostApiV1UploadImagesMutation,
+  useGetApiV1LocationsSearchQuery,
+  useGetApiV1LocationsDetailsByPlaceIdQuery,
   useGetApiV1PromotionsBannersQuery,
   useGetApiV1AnalyticsProductsQuery,
   useGetApiV1AnalyticsBestSellingQuery,
@@ -2712,6 +3029,17 @@ export const {
   useGetApiV1SellersRevenueQuery,
   useGetApiV1UsersQuery,
   useGetApiV1UsersByIdQuery,
+  usePutApiV1UsersByIdMutation,
+  useDeleteApiV1UsersByIdMutation,
+  useGetApiV1UsersByIdKycQuery,
+  usePostApiV1UsersByIdKycApproveMutation,
+  usePostApiV1UsersByIdKycRejectMutation,
+  useGetApiV1WishlistQuery,
+  usePostApiV1WishlistMutation,
+  useDeleteApiV1WishlistMutation,
+  useGetApiV1WishlistIdsQuery,
+  useGetApiV1WishlistCheckByProductIdQuery,
+  useDeleteApiV1WishlistByProductIdMutation,
   useGetApiV1OrdersBuyerByBuyerIdQuery,
   useGetApiV1OrdersDepotByDepotIdQuery,
   useGetApiV1PaymentsQuery,

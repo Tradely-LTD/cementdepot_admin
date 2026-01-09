@@ -12,7 +12,7 @@ import {
   BarChart3,
   Warehouse,
   Route,
-  CircleDollarSign,
+  // CircleDollarSign,
   LogOut,
   Tag,
   Users,
@@ -134,7 +134,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const currentMenuItem = filteredMenuItems.find(
     item => item.path === location.pathname
   );
-  const pageTitle = currentMenuItem?.label || 'Dashboard';
+  // const pageTitle = currentMenuItem?.label || 'Dashboard';
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
@@ -286,7 +286,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </button>
 
             <div className="flex-1 lg:ml-0 ml-4">
-              <h1 className="text-xl lg:text-2xl font-semibold">{pageTitle}</h1>
+              {/* <h1 className="text-xl lg:text-2xl font-semibold">{pageTitle}</h1> */}
             </div>
 
             <div className="flex items-center gap-3">
