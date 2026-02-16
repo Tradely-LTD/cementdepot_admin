@@ -16,7 +16,6 @@ import {
   ShoppingCart,
   MapPin,
   User,
-  Calendar,
   Package,
   TrendingUp,
   TrendingDown,

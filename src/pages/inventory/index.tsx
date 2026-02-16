@@ -18,7 +18,6 @@ import {
   AlertTriangle,
   Edit,
   TrendingUp,
-  TrendingDown,
   Boxes,
   Lock,
 } from 'lucide-react';

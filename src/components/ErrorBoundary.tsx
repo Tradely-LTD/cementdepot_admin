@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
@@ -88,17 +89,16 @@ export class ErrorBoundary extends Component<Props, State> {
                   <p className="text-sm text-red-700 dark:text-red-300 font-mono">
                     {this.state.error.message || 'Unknown error occurred'}
                   </p>
-                  {process.env.NODE_ENV === 'development' &&
-                    this.state.errorInfo && (
-                      <details className="mt-4">
-                        <summary className="text-sm font-semibold text-red-800 dark:text-red-200 cursor-pointer">
-                          Stack Trace
-                        </summary>
-                        <pre className="mt-2 text-xs text-red-700 dark:text-red-300 overflow-auto max-h-48">
-                          {this.state.errorInfo.componentStack}
-                        </pre>
-                      </details>
-                    )}
+                  {import.meta.env.DEV && this.state.errorInfo && (
+                    <details className="mt-4">
+                      <summary className="text-sm font-semibold text-red-800 dark:text-red-200 cursor-pointer">
+                        Stack Trace
+                      </summary>
+                      <pre className="mt-2 text-xs text-red-700 dark:text-red-300 overflow-auto max-h-48">
+                        {this.state.errorInfo.componentStack}
+                      </pre>
+                    </details>
+                  )}
                 </div>
               )}
 

@@ -131,9 +131,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   });
 
   // Get current page title based on route
-  const currentMenuItem = filteredMenuItems.find(
-    item => item.path === location.pathname
-  );
+  // const currentMenuItem = filteredMenuItems.find(
+  //   item => item.path === location.pathname
+  // );
   // const pageTitle = currentMenuItem?.label || 'Dashboard';
 
   return (

@@ -71,22 +71,11 @@ export const useInventory = (selectedDepotId?: string) => {
     reason: string
   ) => {
     try {
-      // Determine adjustment type based on quantity change
-      // Positive = STOCK_IN, Negative = STOCK_OUT
-      // For manual adjustments, we'll use MANUAL_ADJUSTMENT
-      const adjustmentType =
-        quantityChange > 0
-          ? 'stock_in'
-          : quantityChange < 0
-            ? 'stock_out'
-            : 'manual_adjustment';
-
       await adjustInventory({
         body: {
           depotId,
           productId,
-          type: adjustmentType,
-          quantityChange,
+          adjustment: quantityChange,
           reason,
         },
       }).unwrap();

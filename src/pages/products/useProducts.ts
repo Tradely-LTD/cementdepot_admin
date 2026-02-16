@@ -27,11 +27,10 @@ export const useProducts = () => {
     useGetApiV1ProductsMyQuery({
       page,
       limit,
-      category: filters.category,
+      category: filters.category as 'cement' | 'building_materials' | undefined,
       brandId: filters.brandId,
       depotId: filters.depotId,
-      isActive:
-        filters.isActive !== undefined ? String(filters.isActive) : undefined,
+      isActive: filters.isActive !== undefined ? filters.isActive : undefined,
       search: filters.search,
     });
 

@@ -32,7 +32,8 @@ export function Dashboard() {
   // Fetch low stock items (threshold: 10)
   const { data: lowStockData, isLoading: isLoadingLowStock } =
     useGetApiV1InventoryLowStockQuery({ threshold: 10 });
-  const lowStockItems = lowStockData?.data?.items || [];
+  const lowStockItems =
+    (lowStockData?.data as any)?.items || lowStockData?.data || [];
 
   return (
     <div className="space-y-6">
@@ -191,7 +192,7 @@ export function Dashboard() {
           {gisStatus && (
             <Card
               className={`p-6 ${
-                gisStatus.depotsWithoutGis > 0
+                (gisStatus.depotsWithoutGis ?? 0) > 0
                   ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
                   : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
               }`}
@@ -200,7 +201,7 @@ export function Dashboard() {
                 <div className="flex items-center gap-3">
                   <MapPin
                     className={`h-5 w-5 ${
-                      gisStatus.depotsWithoutGis > 0
+                      (gisStatus.depotsWithoutGis ?? 0) > 0
                         ? 'text-yellow-600 dark:text-yellow-400'
                         : 'text-green-600 dark:text-green-400'
                     }`}
@@ -208,7 +209,7 @@ export function Dashboard() {
                   <div>
                     <h3
                       className={`text-lg font-semibold ${
-                        gisStatus.depotsWithoutGis > 0
+                        (gisStatus.depotsWithoutGis ?? 0) > 0
                           ? 'text-yellow-900 dark:text-yellow-100'
                           : 'text-green-900 dark:text-green-100'
                       }`}
@@ -217,17 +218,17 @@ export function Dashboard() {
                     </h3>
                     <p
                       className={`text-sm ${
-                        gisStatus.depotsWithoutGis > 0
+                        (gisStatus.depotsWithoutGis ?? 0) > 0
                           ? 'text-yellow-700 dark:text-yellow-300'
                           : 'text-green-700 dark:text-green-300'
                       }`}
                     >
-                      {gisStatus.depotsWithGis} depots with coordinates,{' '}
-                      {gisStatus.depotsWithoutGis} without
+                      {gisStatus.depotsWithGis ?? 0} depots with coordinates,{' '}
+                      {gisStatus.depotsWithoutGis ?? 0} without
                     </p>
                   </div>
                 </div>
-                {gisStatus.depotsWithoutGis > 0 && (
+                {(gisStatus.depotsWithoutGis ?? 0) > 0 && (
                   <Link to="/depots">
                     <Button variant="outline" size="sm">
                       Update
@@ -256,7 +257,13 @@ export function Dashboard() {
                   </p>
                 </div>
               </div>
-              <RevenueChart data={charts?.revenueTrend || []} />
+              <RevenueChart
+                data={(charts?.revenueTrend || []).map((d: any) => ({
+                  day: d.day || d.date || '',
+                  date: d.date || d.day || '',
+                  revenue: d.revenue || 0,
+                }))}
+              />
             </Card>
 
             {/* Orders Distribution Chart */}
@@ -272,7 +279,13 @@ export function Dashboard() {
                   </p>
                 </div>
               </div>
-              <OrdersChart data={charts?.ordersDistribution || []} />
+              <OrdersChart
+                data={(charts?.ordersDistribution || []).map((d: any) => ({
+                  day: d.day || d.date || '',
+                  date: d.date || d.day || '',
+                  orders: d.orders || d.count || 0,
+                }))}
+              />
             </Card>
           </div>
 
@@ -289,7 +302,13 @@ export function Dashboard() {
                 </p>
               </div>
             </div>
-            <ProductPerformanceChart data={charts?.productPerformance || []} />
+            <ProductPerformanceChart
+              data={(charts?.productPerformance || []).map((d: any) => ({
+                name: d.name || '',
+                sales: d.sales || 0,
+                revenue: d.revenue || 0,
+              }))}
+            />
           </Card>
         </>
       )}
@@ -501,7 +520,6 @@ function OrdersChart({ data }: { data: OrdersDataPoint[] }) {
   const maxOrders = Math.max(...data.map(d => d.orders), 1);
   const chartHeight = 200;
   const barWidth = 50;
-  const spacing = 20;
 
   return (
     <div className="relative">

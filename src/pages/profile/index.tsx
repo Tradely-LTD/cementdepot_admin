@@ -36,15 +36,16 @@ export function Profile() {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const userData = user as any;
   const [profileData, setProfileData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    phone: user?.phone || '',
-    businessName: user?.businessName || '',
-    state: user?.state || '',
-    lga: user?.lga || '',
-    city: user?.city || '',
-    address: user?.address || '',
+    firstName: userData?.firstName || '',
+    lastName: userData?.lastName || '',
+    phone: userData?.phone || userData?.phoneNumber || '',
+    businessName: userData?.businessName || '',
+    state: userData?.state || '',
+    lga: userData?.lga || '',
+    city: userData?.city || '',
+    address: userData?.address || '',
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -83,27 +84,31 @@ export function Profile() {
       const { data: meData } = await refetchUser();
 
       if (meData?.data) {
+        const userData = meData.data as any;
         // Update Redux state with new user data
         dispatch(
           setLoginResponse({
             ...loginResponse!,
             data: {
               ...loginResponse!.data,
-              user: meData.data,
+              user: {
+                ...loginResponse!.data.user,
+                ...userData,
+              },
             },
           })
         );
 
         // Update local profile data state
         setProfileData({
-          firstName: meData.data?.firstName || '',
-          lastName: meData.data?.lastName || '',
-          phone: meData.data?.phone || '',
-          businessName: meData.data?.businessName || '',
-          state: meData.data?.state || '',
-          lga: meData.data?.lga || '',
-          city: meData.data?.city || '',
-          address: meData.data?.address || '',
+          firstName: userData?.firstName || '',
+          lastName: userData?.lastName || '',
+          phone: userData?.phone || userData?.phoneNumber || '',
+          businessName: userData?.businessName || '',
+          state: userData?.state || '',
+          lga: userData?.lga || '',
+          city: userData?.city || '',
+          address: userData?.address || '',
         });
       }
 
@@ -170,9 +175,10 @@ export function Profile() {
     }
   };
 
-  const initials = user
-    ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() ||
-      user.email?.[0]?.toUpperCase() ||
+  const initials = userData
+    ? `${userData.firstName?.[0] ?? ''}${userData.lastName?.[0] ?? ''}`.toUpperCase() ||
+      userData.email?.[0]?.toUpperCase() ||
+      userData.fullName?.[0]?.toUpperCase() ||
       'U'
     : 'U';
 
@@ -219,9 +225,9 @@ export function Profile() {
                     Full Name
                   </p>
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {user?.firstName && user?.lastName
-                      ? `${user.firstName} ${user.lastName}`
-                      : user?.email || 'N/A'}
+                    {userData?.firstName && userData?.lastName
+                      ? `${userData.firstName} ${userData.lastName}`
+                      : userData?.fullName || userData?.email || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -233,7 +239,7 @@ export function Profile() {
                     Email
                   </p>
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {user?.email || 'N/A'}
+                    {userData?.email || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -245,7 +251,7 @@ export function Profile() {
                     Phone
                   </p>
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {user?.phone || 'N/A'}
+                    {userData?.phone || userData?.phoneNumber || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -259,12 +265,12 @@ export function Profile() {
                     Role
                   </p>
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {(user?.role || 'admin').toUpperCase()}
+                    {(userData?.role || 'admin').toUpperCase()}
                   </p>
                 </div>
               </div>
 
-              {user?.businessName && (
+              {userData?.businessName && (
                 <div className="flex items-start gap-3">
                   <Building className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
@@ -272,13 +278,13 @@ export function Profile() {
                       Business Name
                     </p>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {user.businessName}
+                      {userData.businessName}
                     </p>
                   </div>
                 </div>
               )}
 
-              {(user?.state || user?.city || user?.address) && (
+              {(userData?.state || userData?.city || userData?.address) && (
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
@@ -286,7 +292,12 @@ export function Profile() {
                       Address
                     </p>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {[user?.address, user?.city, user?.lga, user?.state]
+                      {[
+                        userData?.address,
+                        userData?.city,
+                        userData?.lga,
+                        userData?.state,
+                      ]
                         .filter(Boolean)
                         .join(', ') || 'N/A'}
                     </p>

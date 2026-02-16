@@ -139,4 +139,3 @@ const FormField = React.forwardRef<
 FormField.displayName = 'FormField';
 
 export { FormField };
-export type { FormFieldProps };

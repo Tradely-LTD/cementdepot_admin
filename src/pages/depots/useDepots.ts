@@ -34,9 +34,17 @@ export const useDepots = () => {
     city: filters.city,
     sellerId: filters.sellerId,
     isActive:
-      filters.isActive !== undefined ? String(filters.isActive) : undefined,
+      filters.isActive !== undefined
+        ? filters.isActive
+          ? ('true' as const)
+          : ('false' as const)
+        : undefined,
     isVerified:
-      filters.isVerified !== undefined ? String(filters.isVerified) : undefined,
+      filters.isVerified !== undefined
+        ? filters.isVerified
+          ? ('true' as const)
+          : ('false' as const)
+        : undefined,
   });
 
   // Create depot

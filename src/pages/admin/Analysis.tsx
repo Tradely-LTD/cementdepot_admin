@@ -6,17 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  DollarSign,
-  Package,
-  ShoppingCart,
-  Clock,
-} from 'lucide-react';
+import { DollarSign, Package, ShoppingCart, Clock } from 'lucide-react';
 import {
   useGetApiV1ReportsSalesQuery,
   useGetApiV1ReportsInventoryQuery,
@@ -176,10 +167,18 @@ export function Analysis() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {formatNumber(orders?.summary?.totalOrders)}
+                  {formatNumber(orders?.totalOrders)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Avg: {formatCurrency(orders?.summary?.averageOrderValue)}
+                  {orders?.ordersByStatus &&
+                    Object.keys(orders.ordersByStatus).length > 0 && (
+                      <span>
+                        {Object.entries(orders.ordersByStatus)
+                          .slice(0, 2)
+                          .map(([status, count]) => `${status}: ${count}`)
+                          .join(', ')}
+                      </span>
+                    )}
                 </p>
               </CardContent>
             </Card>
@@ -210,7 +209,10 @@ export function Analysis() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {performance?.summary?.averageFulfillmentDays || '0'} days
+                  {performance?.averageDeliveryTime
+                    ? `${Math.round(performance.averageDeliveryTime / 24)}`
+                    : '0'}{' '}
+                  days
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Average delivery time
@@ -340,46 +342,48 @@ export function Analysis() {
                       Total Orders
                     </p>
                     <p className="text-2xl font-bold">
-                      {formatNumber(orders?.summary?.totalOrders)}
+                      {formatNumber(orders?.totalOrders)}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">
-                      Average Order Value
+                      Orders by Status
                     </p>
                     <p className="text-2xl font-bold">
-                      {formatCurrency(orders?.summary?.averageOrderValue)}
+                      {orders?.ordersByStatus
+                        ? Object.keys(orders.ordersByStatus).length
+                        : 0}
                     </p>
                   </div>
                 </div>
 
-                {orders?.byStatus && orders.byStatus.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Orders by Status</h4>
-                    <div className="space-y-2">
-                      {orders.byStatus.map((status: any, index: number) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 border rounded-lg"
-                        >
-                          <div>
-                            <p className="font-medium capitalize">
-                              {status.status?.replace('_', ' ') || 'N/A'}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold">
-                              {formatNumber(status.count)}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {formatCurrency(status.totalRevenue)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                {orders?.ordersByStatus &&
+                  Object.keys(orders.ordersByStatus).length > 0 && (
+                    <div>
+                      <h4 className="font-semibold mb-2">Orders by Status</h4>
+                      <div className="space-y-2">
+                        {Object.entries(orders.ordersByStatus).map(
+                          ([status, count], index: number) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-3 border rounded-lg"
+                            >
+                              <div>
+                                <p className="font-medium capitalize">
+                                  {status?.replace('_', ' ') || 'N/A'}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-semibold">
+                                  {formatNumber(count as number)}
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             </CardContent>
           </Card>
@@ -473,48 +477,53 @@ export function Analysis() {
                     Average Fulfillment Time
                   </p>
                   <p className="text-2xl font-bold">
-                    {performance?.summary?.averageFulfillmentDays || '0'} days
+                    {performance?.averageDeliveryTime
+                      ? `${Math.round(performance.averageDeliveryTime / 24)}`
+                      : '0'}{' '}
+                    days
                   </p>
                 </div>
 
-                {performance?.byDepot && performance.byDepot.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Performance by Depot</h4>
-                    <div className="space-y-2">
-                      {performance.byDepot.map((depot: any, index: number) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 border rounded-lg"
-                        >
-                          <div>
-                            <p className="font-medium">
-                              {depot.depotName || 'N/A'}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {formatNumber(depot.completedOrders)} /{' '}
-                              {formatNumber(depot.totalOrders)} completed
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold">
-                              {formatCurrency(depot.totalRevenue)}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {depot.totalOrders > 0
-                                ? Math.round(
-                                    (depot.completedOrders /
-                                      depot.totalOrders) *
-                                      100
-                                  )
-                                : 0}
-                              % completion
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                {performance?.topPerformingDepots &&
+                  performance.topPerformingDepots.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold mb-2">
+                        Performance by Depot
+                      </h4>
+                      <div className="space-y-2">
+                        {performance.topPerformingDepots.map(
+                          (depot: any, index: number) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-3 border rounded-lg"
+                            >
+                              <div>
+                                <p className="font-medium">
+                                  {depot.depotName || 'N/A'}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {formatNumber(depot.totalOrders)} orders
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-semibold">
+                                  {formatCurrency(depot.revenue)}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {performance.orderFulfillmentRate
+                                    ? Math.round(
+                                        performance.orderFulfillmentRate
+                                      )
+                                    : 0}
+                                  % fulfillment
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             </CardContent>
           </Card>
