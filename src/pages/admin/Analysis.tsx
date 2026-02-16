@@ -444,13 +444,43 @@ export function Analysis() {
                                 Depot: {item.depotName || 'N/A'}
                               </p>
                             </div>
-                            <div className="text-right">
-                              <p className="font-semibold">
-                                {formatNumber(item.quantity)}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Available: {formatNumber(item.available)}
-                              </p>
+                            <div className="text-right space-y-1">
+                              <div>
+                                <p className="text-xs text-muted-foreground">
+                                  Total Quantity
+                                </p>
+                                <p className="font-semibold">
+                                  {formatNumber(
+                                    item.quantity || item.totalQuantity
+                                  )}
+                                </p>
+                              </div>
+                              <div className="flex gap-3">
+                                <div>
+                                  <p className="text-xs text-muted-foreground">
+                                    Available
+                                  </p>
+                                  <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                                    {formatNumber(
+                                      item.availableQuantity ||
+                                        item.available ||
+                                        0
+                                    )}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">
+                                    Reserved
+                                  </p>
+                                  <p className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                                    {formatNumber(
+                                      item.reservedQuantity ||
+                                        item.reserved ||
+                                        0
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         ))}
